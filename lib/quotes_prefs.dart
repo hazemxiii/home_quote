@@ -40,7 +40,7 @@ void deleteQuote(String id) async {
   changeVisible();
 }
 
-void addQuote(String quote) async {
+Future<String> addQuote(String quote) async {
   SharedPreferences spref = await SharedPreferences.getInstance();
   Map quotes = jsonDecode(spref.getString("Quotes")!);
   int? newMaxID = spref.getInt("maxID")! + 1;
@@ -53,6 +53,8 @@ void addQuote(String quote) async {
   spref.setInt("maxID", newMaxID);
 
   changeVisible();
+
+  return newID;
 }
 
 Future<bool> selectQuote(String id, bool select) async {
@@ -98,5 +100,7 @@ void changeVisible() async {
     int randomIDIndex = Random().nextInt(selected.length);
     String selectedID = selected[randomIDIndex];
     spref.setString("currentVisible", selectedID);
+  } else {
+    spref.setString("currentVisible", "");
   }
 }

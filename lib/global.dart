@@ -23,6 +23,7 @@ class SelectNotifier extends ChangeNotifier {
   List selected = [];
   bool multiSelection = false;
   String visible = "";
+  Map quotes = {};
 
   void selectionChanged() async {
     SharedPreferences spref = await SharedPreferences.getInstance();
@@ -34,9 +35,14 @@ class SelectNotifier extends ChangeNotifier {
     return selected.contains(id);
   }
 
-  void setData(List s, String visible) {
+  void setData(Map quotes, List s, String visible) {
     selected = s;
     this.visible = visible;
+    this.quotes = quotes;
+  }
+
+  void quoteAdded(String id, String quote) {
+    quotes[id] = quote;
   }
 
   void visibleChanged() async {

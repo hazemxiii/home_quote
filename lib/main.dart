@@ -6,11 +6,6 @@ import 'package:provider/provider.dart';
 import "quotes_prefs.dart";
 
 void main() {
-  // runApp(ChangeNotifierProvider(
-  //   create: (context) => MyColors(),
-  //   child: const App(),
-  // ));
-
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => MyColors()),
@@ -69,7 +64,7 @@ class _QuotesPageState extends State<QuotesPage> {
                   bool multi = data['multi'];
                   String current = data["current"];
                   Provider.of<SelectNotifier>(context, listen: false)
-                      .setData(selected, current);
+                      .setData(quotes, selected, current);
 
                   return Column(
                     children: [
@@ -92,17 +87,21 @@ class _QuotesPageState extends State<QuotesPage> {
                             );
                           })),
                       MultipleSelectionWidget(isOn: multi),
-                      Expanded(
-                          child: SingleChildScrollView(
-                        child: Column(
-                            children: List.generate(quotes.length, (i) {
-                          MapEntry quote = quotes.entries.elementAt(i);
-                          return QuoteWidget(
-                            // selected: selected.contains(quote.key),
-                            quote: quote.value,
-                            id: quote.key,
-                          );
-                        })),
+                      Expanded(child: SingleChildScrollView(
+                        child: Consumer<SelectNotifier>(
+                            builder: (context, selection, child) {
+                          return Column(
+                              children:
+                                  List.generate(selection.quotes.length, (i) {
+                            MapEntry quote =
+                                selection.quotes.entries.elementAt(i);
+                            return QuoteWidget(
+                              selected: selection.isSelected(quote.key),
+                              quote: quote.value,
+                              id: quote.key,
+                            );
+                          }));
+                        }),
                       ))
                     ],
                   );
@@ -119,21 +118,18 @@ class _QuotesPageState extends State<QuotesPage> {
 class QuoteWidget extends StatefulWidget {
   final String quote;
   final String id;
-  // final bool selected;
-  const QuoteWidget({
-    super.key,
-    required this.quote,
-    required this.id,
-    // required this.selected
-  });
+  final bool selected;
+  const QuoteWidget(
+      {super.key,
+      required this.quote,
+      required this.id,
+      required this.selected});
 
   @override
   State<QuoteWidget> createState() => _QuoteWidgetState();
 }
 
 class _QuoteWidgetState extends State<QuoteWidget> {
-  bool? selected;
-
   @override
   void initState() {
     // selected = widget.selected;
@@ -143,66 +139,63 @@ class _QuoteWidgetState extends State<QuoteWidget> {
   @override
   Widget build(BuildContext context) {
     return Consumer<MyColors>(builder: (context, clrs, child) {
-      return Consumer<SelectNotifier>(builder: (context, selection, child2) {
-        bool selected = selection.isSelected(widget.id);
-        return InkWell(
-          onTap: () async {
-            await selectQuote(widget.id, !selected);
-            if (context.mounted) {
-              Provider.of<SelectNotifier>(context, listen: false)
-                  .selectionChanged();
-              Provider.of<SelectNotifier>(context, listen: false)
-                  .visibleChanged();
-            }
+      return InkWell(
+        onTap: () async {
+          await selectQuote(widget.id, !widget.selected);
+          if (context.mounted) {
+            Provider.of<SelectNotifier>(context, listen: false)
+                .selectionChanged();
+            Provider.of<SelectNotifier>(context, listen: false)
+                .visibleChanged();
+          }
+        },
+        child: Dismissible(
+          confirmDismiss: (direction) async {
+            return await showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    backgroundColor: clrs.getColorC,
+                    content: Text("Delete \"${widget.quote}\"",
+                        style: TextStyle(color: clrs.getTextC)),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text("Delete",
+                              style: TextStyle(color: clrs.getTextC)))
+                    ],
+                  );
+                });
           },
-          child: Dismissible(
-            confirmDismiss: (direction) async {
-              return await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      backgroundColor: clrs.getColorC,
-                      content: Text("Delete \"${widget.quote}\"",
-                          style: TextStyle(color: clrs.getTextC)),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text("Delete",
-                                style: TextStyle(color: clrs.getTextC)))
-                      ],
-                    );
-                  });
-            },
-            key: Key(widget.id),
-            onDismissed: (direction) {
-              deleteQuote(widget.id);
-              Provider.of<SelectNotifier>(context, listen: false)
-                  .visibleChanged();
-              Provider.of<MyColors>(context, listen: false)
-                  .setColor(clrs.getColorC!);
-            },
-            child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                height: 50,
-                margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                alignment: Alignment.centerLeft,
-                decoration: BoxDecoration(
-                  border: Border.all(color: clrs.getColorC!),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  color: selected ? clrs.getTextC : clrs.getColorC,
+          key: Key(widget.id),
+          onDismissed: (direction) {
+            deleteQuote(widget.id);
+            Provider.of<SelectNotifier>(context, listen: false)
+                .visibleChanged();
+            Provider.of<MyColors>(context, listen: false)
+                .setColor(clrs.getColorC!);
+          },
+          child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              height: 50,
+              margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                border: Border.all(color: clrs.getColorC!),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                color: widget.selected ? clrs.getTextC : clrs.getColorC,
+              ),
+              child: Text(
+                widget.quote,
+                style: TextStyle(
+                  color: widget.selected ? clrs.getColorC : clrs.getTextC,
                 ),
-                child: Text(
-                  widget.quote,
-                  style: TextStyle(
-                    color: selected ? clrs.getColorC : clrs.getTextC,
-                  ),
-                )),
-          ),
-        );
-      });
+              )),
+        ),
+      );
     });
   }
 }
@@ -241,13 +234,17 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
               },
               child: Text("cancel", style: btnStyle)),
           TextButton(
-              onPressed: () {
-                addQuote(textEditingController.text);
-                Provider.of<MyColors>(context, listen: false)
-                    .setColor(clrs.getColorC!);
-                Provider.of<SelectNotifier>(context, listen: false)
-                    .visibleChanged();
-                Navigator.of(context).pop();
+              onPressed: () async {
+                String id = await addQuote(textEditingController.text);
+                // Provider.of<MyColors>(context, listen: false)
+                //     .setColor(clrs.getColorC!);
+                if (context.mounted) {
+                  Provider.of<SelectNotifier>(context, listen: false)
+                      .visibleChanged();
+                  Provider.of<SelectNotifier>(context, listen: false)
+                      .quoteAdded(id, textEditingController.text);
+                  Navigator.of(context).pop();
+                }
               },
               child: Text(
                 "save",
