@@ -22,6 +22,7 @@ class MyColors extends ChangeNotifier {
 class SelectNotifier extends ChangeNotifier {
   List selected = [];
   bool multiSelection = false;
+  String visible = "";
 
   void selectionChanged() async {
     SharedPreferences spref = await SharedPreferences.getInstance();
@@ -33,7 +34,14 @@ class SelectNotifier extends ChangeNotifier {
     return selected.contains(id);
   }
 
-  void setSelected(List s) {
+  void setData(List s, String visible) {
     selected = s;
+    this.visible = visible;
+  }
+
+  void visibleChanged() async {
+    SharedPreferences spref = await SharedPreferences.getInstance();
+    visible = spref.getString("currentVisible")!;
+    notifyListeners();
   }
 }

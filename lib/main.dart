@@ -66,10 +66,10 @@ class _QuotesPageState extends State<QuotesPage> {
                   Map data = snapshot.data!;
                   Map quotes = jsonDecode(data['quotes']);
                   List selected = data['selected'];
-                  Provider.of<SelectNotifier>(context, listen: false)
-                      .setSelected(selected);
                   bool multi = data['multi'];
                   String current = data["current"];
+                  Provider.of<SelectNotifier>(context, listen: false)
+                      .setData(selected, current);
 
                   return Column(
                     children: [
@@ -84,10 +84,13 @@ class _QuotesPageState extends State<QuotesPage> {
                                 const BorderRadius.all(Radius.circular(10)),
                             color: clrs.getColorC,
                           ),
-                          child: Text(
-                            current,
-                            style: TextStyle(color: clrs.getTextC),
-                          )),
+                          child: Consumer<SelectNotifier>(
+                              builder: (context, select, child) {
+                            return Text(
+                              select.visible,
+                              style: TextStyle(color: clrs.getTextC),
+                            );
+                          })),
                       MultipleSelectionWidget(isOn: multi),
                       Expanded(
                           child: SingleChildScrollView(
@@ -148,6 +151,8 @@ class _QuoteWidgetState extends State<QuoteWidget> {
             if (context.mounted) {
               Provider.of<SelectNotifier>(context, listen: false)
                   .selectionChanged();
+              Provider.of<SelectNotifier>(context, listen: false)
+                  .visibleChanged();
             }
           },
           child: Dismissible(
@@ -170,9 +175,13 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                     );
                   });
             },
-            key: const ValueKey(0),
+            key: Key(widget.id),
             onDismissed: (direction) {
               deleteQuote(widget.id);
+              Provider.of<SelectNotifier>(context, listen: false)
+                  .visibleChanged();
+              Provider.of<MyColors>(context, listen: false)
+                  .setColor(clrs.getColorC!);
             },
             child: Container(
                 width: double.infinity,
@@ -236,6 +245,8 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
                 addQuote(textEditingController.text);
                 Provider.of<MyColors>(context, listen: false)
                     .setColor(clrs.getColorC!);
+                Provider.of<SelectNotifier>(context, listen: false)
+                    .visibleChanged();
                 Navigator.of(context).pop();
               },
               child: Text(
@@ -283,6 +294,8 @@ class _MultipleSelectionWidgetState extends State<MultipleSelectionWidget> {
               isMultipleSelection = v!;
               Provider.of<SelectNotifier>(context, listen: false)
                   .selectionChanged();
+              Provider.of<SelectNotifier>(context, listen: false)
+                  .visibleChanged();
             });
           });
     });

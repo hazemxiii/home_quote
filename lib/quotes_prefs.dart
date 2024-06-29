@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,6 +21,7 @@ Future<Map> getQuotes() async {
   if (!spref.containsKey("currentVisible")) {
     spref.setString("currentVisible", "");
   }
+
   return {
     "quotes": spref.getString("Quotes"),
     "selected": spref.getStringList("selected"),
@@ -33,6 +35,9 @@ void deleteQuote(String id) async {
   Map quotes = jsonDecode(spref.getString("Quotes")!);
   quotes.remove(id);
   spref.setString("Quotes", jsonEncode(quotes));
+
+  selectQuote(id, false);
+  changeVisible();
 }
 
 void addQuote(String quote) async {
@@ -46,6 +51,8 @@ void addQuote(String quote) async {
 
   spref.setString("Quotes", jsonEncode(quotes));
   spref.setInt("maxID", newMaxID);
+
+  changeVisible();
 }
 
 Future<bool> selectQuote(String id, bool select) async {
@@ -56,6 +63,7 @@ Future<bool> selectQuote(String id, bool select) async {
   if (!multi) {
     if (select) {
       spref.setStringList("selected", [id]);
+      changeVisible();
     }
     return Future.value(true);
   }
@@ -67,6 +75,7 @@ Future<bool> selectQuote(String id, bool select) async {
   }
 
   spref.setStringList("selected", selected);
+  changeVisible();
 
   return Future.value(true);
 }
@@ -77,6 +86,17 @@ void toggleMultiSelection() async {
   int selectedNum = spref.getStringList("selected")!.length;
   if (oldVal && selectedNum > 1) {
     spref.setStringList("selected", []);
+    spref.setString("currentVisible", "");
   }
   spref.setBool("multiSelection", !oldVal);
+}
+
+void changeVisible() async {
+  SharedPreferences spref = await SharedPreferences.getInstance();
+  List selected = spref.getStringList("selected")!;
+  if (selected.isNotEmpty) {
+    int randomIDIndex = Random().nextInt(selected.length);
+    String selectedID = selected[randomIDIndex];
+    spref.setString("currentVisible", selectedID);
+  }
 }
