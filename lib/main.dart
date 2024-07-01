@@ -1,15 +1,14 @@
-import 'dart:convert';
-
+// import 'dart:convert';
 import "package:flutter/material.dart";
 import 'global.dart';
 import 'package:provider/provider.dart';
-import "quotes_prefs.dart";
+// import "quotes_prefs.dart";
 
 void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => MyColors()),
-      ChangeNotifierProvider(create: (context) => SelectNotifier())
+      ChangeNotifierProvider(create: (context) => QuotesNotifier())
     ],
     child: const App(),
   ));
@@ -33,84 +32,80 @@ class QuotesPage extends StatefulWidget {
 
 class _QuotesPageState extends State<QuotesPage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<MyColors>(builder: (context, clrs, child) {
-      return Scaffold(
-          floatingActionButton: FloatingActionButton(
-              foregroundColor: clrs.getColorC,
-              backgroundColor: clrs.getTextC,
-              child: const Icon(Icons.add),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return const InputDialogWidget();
-                    });
-              }),
-          backgroundColor: clrs.getTextC,
-          appBar: AppBar(
-            title: const Text("My Quotes"),
-            backgroundColor: clrs.getTextC,
-            foregroundColor: clrs.getColorC,
-          ),
-          body: FutureBuilder(
-              future: getQuotes(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData) {
-                  Map data = snapshot.data!;
-                  Map quotes = jsonDecode(data['quotes']);
-                  List selected = data['selected'];
-                  bool multi = data['multi'];
-                  String current = data["current"];
-                  Provider.of<SelectNotifier>(context, listen: false)
-                      .setData(quotes, selected, current);
-
-                  return Column(
-                    children: [
-                      Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          height: 100,
-                          margin: const EdgeInsets.all(20),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
-                            color: clrs.getColorC,
-                          ),
-                          child: Consumer<SelectNotifier>(
-                              builder: (context, select, child) {
+      return FutureBuilder(
+          future:
+              Provider.of<QuotesNotifier>(context, listen: false).loadData(),
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return Center(
+                child: CircularProgressIndicator(color: clrs.getColorC),
+              );
+            }
+            return Scaffold(
+                floatingActionButton: FloatingActionButton(
+                    foregroundColor: clrs.getColorC,
+                    backgroundColor: clrs.getTextC,
+                    child: const Icon(Icons.add),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return const InputDialogWidget();
+                          });
+                    }),
+                backgroundColor: clrs.getTextC,
+                appBar: AppBar(
+                  title: const Text("My Quotes"),
+                  backgroundColor: clrs.getTextC,
+                  foregroundColor: clrs.getColorC,
+                ),
+                body: Column(
+                  children: [
+                    Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        height: 100,
+                        margin: const EdgeInsets.all(20),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
+                          color: clrs.getColorC,
+                        ),
+                        child: Consumer<QuotesNotifier>(
+                          builder: (context, qNotifier, child) {
                             return Text(
-                              select.visible,
+                              qNotifier.getVisible,
                               style: TextStyle(color: clrs.getTextC),
                             );
-                          })),
-                      MultipleSelectionWidget(isOn: multi),
-                      Expanded(child: SingleChildScrollView(
-                        child: Consumer<SelectNotifier>(
-                            builder: (context, selection, child) {
-                          return Column(
-                              children:
-                                  List.generate(selection.quotes.length, (i) {
-                            MapEntry quote =
-                                selection.quotes.entries.elementAt(i);
-                            return QuoteWidget(
-                              selected: selection.isSelected(quote.key),
-                              quote: quote.value,
-                              id: quote.key,
-                            );
-                          }));
-                        }),
-                      ))
-                    ],
-                  );
-                } else {
-                  return CircularProgressIndicator(
-                    color: clrs.getColorC,
-                  );
-                }
-              }));
+                          },
+                        )),
+                    const MultipleSelectionWidget(),
+                    Expanded(child: SingleChildScrollView(
+                      child: Consumer<QuotesNotifier>(
+                          builder: (context, qNotifier, child) {
+                        Map data = qNotifier.getQuotes;
+                        return Column(
+                            children: List.generate(data.length, (i) {
+                          MapEntry quote = data.entries.elementAt(i);
+                          return QuoteWidget(
+                            selected: qNotifier.isSelected(quote.key),
+                            quote: quote.value,
+                            id: quote.key,
+                          );
+                        }));
+                      }),
+                    ))
+                  ],
+                ));
+          });
     });
   }
 }
@@ -132,7 +127,6 @@ class QuoteWidget extends StatefulWidget {
 class _QuoteWidgetState extends State<QuoteWidget> {
   @override
   void initState() {
-    // selected = widget.selected;
     super.initState();
   }
 
@@ -140,14 +134,9 @@ class _QuoteWidgetState extends State<QuoteWidget> {
   Widget build(BuildContext context) {
     return Consumer<MyColors>(builder: (context, clrs, child) {
       return InkWell(
-        onTap: () async {
-          await selectQuote(widget.id, !widget.selected);
-          if (context.mounted) {
-            Provider.of<SelectNotifier>(context, listen: false)
-                .selectionChanged();
-            Provider.of<SelectNotifier>(context, listen: false)
-                .visibleChanged();
-          }
+        onTap: () {
+          Provider.of<QuotesNotifier>(context, listen: false)
+              .selectQuote(widget.id);
         },
         child: Dismissible(
           confirmDismiss: (direction) async {
@@ -171,11 +160,8 @@ class _QuoteWidgetState extends State<QuoteWidget> {
           },
           key: Key(widget.id),
           onDismissed: (direction) {
-            deleteQuote(widget.id);
-            Provider.of<SelectNotifier>(context, listen: false)
-                .visibleChanged();
-            Provider.of<MyColors>(context, listen: false)
-                .setColor(clrs.getColorC!);
+            Provider.of<QuotesNotifier>(context, listen: false)
+                .deleteQuote(widget.id);
           },
           child: Container(
               width: double.infinity,
@@ -234,17 +220,11 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
               },
               child: Text("cancel", style: btnStyle)),
           TextButton(
-              onPressed: () async {
-                String id = await addQuote(textEditingController.text);
-                // Provider.of<MyColors>(context, listen: false)
-                //     .setColor(clrs.getColorC!);
-                if (context.mounted) {
-                  Provider.of<SelectNotifier>(context, listen: false)
-                      .visibleChanged();
-                  Provider.of<SelectNotifier>(context, listen: false)
-                      .quoteAdded(id, textEditingController.text);
-                  Navigator.of(context).pop();
-                }
+              onPressed: () {
+                Provider.of<QuotesNotifier>(context, listen: false)
+                    .addQuote(textEditingController.text);
+
+                Navigator.of(context).pop();
               },
               child: Text(
                 "save",
@@ -257,8 +237,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
 }
 
 class MultipleSelectionWidget extends StatefulWidget {
-  final bool isOn;
-  const MultipleSelectionWidget({super.key, required this.isOn});
+  const MultipleSelectionWidget({super.key});
 
   @override
   State<MultipleSelectionWidget> createState() =>
@@ -270,31 +249,26 @@ class _MultipleSelectionWidgetState extends State<MultipleSelectionWidget> {
 
   @override
   void initState() {
-    isMultipleSelection = widget.isOn;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<MyColors>(builder: (context, clrs, child) {
-      return CheckboxListTile(
-          tileColor: clrs.getTextC,
-          title: Text(
-            "Multiple selection",
-            style: TextStyle(color: clrs.color),
-          ),
-          value: isMultipleSelection,
-          activeColor: clrs.color,
-          onChanged: (v) {
-            setState(() {
-              toggleMultiSelection();
-              isMultipleSelection = v!;
-              Provider.of<SelectNotifier>(context, listen: false)
-                  .selectionChanged();
-              Provider.of<SelectNotifier>(context, listen: false)
-                  .visibleChanged();
+      return Consumer<QuotesNotifier>(builder: (context, qNotifer, child) {
+        return CheckboxListTile(
+            tileColor: clrs.getTextC,
+            title: Text(
+              "Multiple selection",
+              style: TextStyle(color: clrs.color),
+            ),
+            value: qNotifer.getIsMulti,
+            activeColor: clrs.color,
+            onChanged: (v) {
+              Provider.of<QuotesNotifier>(context, listen: false)
+                  .toggleIsMulti();
             });
-          });
+      });
     });
   }
 }
