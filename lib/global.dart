@@ -21,13 +21,30 @@ class MyColors extends ChangeNotifier {
     textColor = parseColorFromHex(prefs.getString("textColor")!);
     color = parseColorFromHex(prefs.getString("color")!);
 
+    updateWidgetColors();
+
     notifyListeners();
+  }
+
+  void updateWidgetColors() {
+    try {
+      if (!Platform.isWindows) {
+        HomeWidget.saveWidgetData("color", "#${getHex(color)}");
+        HomeWidget.saveWidgetData("textColor", "#${getHex(textColor)}");
+        HomeWidget.updateWidget(
+          qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
+        );
+      }
+    } catch (e) {
+      // print(e);
+    }
   }
 
   void setTextColor(Color c) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     textColor = c;
     prefs.setString("textColor", getHex(textColor));
+    updateWidgetColors();
     notifyListeners();
   }
 
@@ -35,13 +52,28 @@ class MyColors extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     color = c;
     prefs.setString("color", getHex(color));
+    updateWidgetColors();
     notifyListeners();
   }
 
   String getHex(Color c) {
-    String hex = c.toString();
-    hex = hex.substring(hex.indexOf("x") + 3, hex.length - 1);
-    return hex;
+    Map hexs = {10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f"};
+
+    int red0 = (c.red / 16).floor();
+    int red1 = c.red - red0 * 16;
+    int green0 = (c.green / 16).floor();
+    int green1 = c.green - green0 * 16;
+    int blue0 = (c.blue / 16).floor();
+    int blue1 = c.blue - blue0 * 16;
+
+    String red =
+        "${red0 > 9 ? hexs[red0] : red0}${red1 > 9 ? hexs[red1] : red1}";
+    String green =
+        "${green0 > 9 ? hexs[green0] : green0}${green1 > 9 ? hexs[green1] : green1}";
+    String blue =
+        "${blue0 > 9 ? hexs[blue0] : blue0}${blue1 > 9 ? hexs[blue1] : blue1}";
+
+    return "$red$green$blue";
   }
 
   Color parseColorFromHex(String hex) {
@@ -148,14 +180,14 @@ class QuotesNotifier extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", jsonEncode(quotes));
 
-    selectQuote(id);
-
-    changeVisible();
-
-    notifyListeners();
+    if (selected.contains(id)) {
+      selectQuote(id);
+    } else {
+      notifyListeners();
+    }
   }
 
-  void selectQuote(String id) async {
+  selectQuote(String id) async {
     if (selected.contains(id)) {
       selected.remove(id);
       changeVisible();
@@ -193,7 +225,7 @@ class QuotesNotifier extends ChangeNotifier {
         );
       }
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 

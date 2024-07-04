@@ -1,9 +1,7 @@
-// import 'dart:convert';
 import "package:flutter/material.dart";
 import 'package:home_quote/settings.dart';
 import 'global.dart';
 import 'package:provider/provider.dart';
-// import "quotes_prefs.dart";
 
 void main() {
   runApp(MultiProvider(
