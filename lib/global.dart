@@ -1,23 +1,77 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
-// import "quotes_prefs.dart";
 
 class MyColors extends ChangeNotifier {
-  Color textColor = const Color.fromRGBO(73, 73, 71, 1);
-  Color color = const Color.fromRGBO(53, 255, 105, 1);
+  Color textColor = const Color.fromRGBO(255, 255, 255, 1);
+  Color color = const Color.fromRGBO(50, 50, 50, 1);
 
-  void setTextColor(Color c) {
-    textColor = c;
+  void loadColors() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey("color")) {
+      prefs.setString("color", getHex(color));
+    }
+    if (!prefs.containsKey("textColor")) {
+      prefs.setString("textColor", getHex(textColor));
+    }
+
+    textColor = parseColorFromHex(prefs.getString("textColor")!);
+    color = parseColorFromHex(prefs.getString("color")!);
+
     notifyListeners();
   }
 
-  void setColor(Color c) {
-    color = c;
+  void setTextColor(Color c) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    textColor = c;
+    prefs.setString("textColor", getHex(textColor));
     notifyListeners();
+  }
+
+  void setColor(Color c) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    color = c;
+    prefs.setString("color", getHex(color));
+    notifyListeners();
+  }
+
+  String getHex(Color c) {
+    String hex = c.toString();
+    hex = hex.substring(hex.indexOf("x") + 3, hex.length - 1);
+    return hex;
+  }
+
+  Color parseColorFromHex(String hex) {
+    int r = colorFromChannel(hex.substring(0, 2));
+    int g = colorFromChannel(hex.substring(2, 4));
+    int b = colorFromChannel(hex.substring(4, 6));
+
+    return Color.fromRGBO(r, g, b, 1);
+  }
+
+  int colorFromChannel(String channel) {
+    channel = channel.toLowerCase();
+    Map hex = {"a": 10, "b": 11, "c": 12, "d": 13, "e": 14, "f": 15};
+
+    int left;
+    int right;
+
+    try {
+      left = int.parse(channel[0]);
+    } catch (e) {
+      left = hex[channel[0]];
+    }
+
+    try {
+      right = int.parse(channel[1]);
+    } catch (e) {
+      right = hex[channel[1]];
+    }
+
+    return left * 16 + right;
   }
 
   Color get getTextC => textColor;
@@ -93,6 +147,11 @@ class QuotesNotifier extends ChangeNotifier {
     quotes.remove(id);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", jsonEncode(quotes));
+
+    selectQuote(id);
+
+    changeVisible();
+
     notifyListeners();
   }
 
@@ -126,12 +185,16 @@ class QuotesNotifier extends ChangeNotifier {
     prefs.setString("visible", visible);
 
     notifyListeners();
-
-    HomeWidget.saveWidgetData("visible", visible);
-
-    HomeWidget.updateWidget(
-      qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
-    );
+    try {
+      if (!Platform.isWindows) {
+        HomeWidget.saveWidgetData("visible", visible);
+        HomeWidget.updateWidget(
+          qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   void clearSelection() async {

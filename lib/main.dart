@@ -1,5 +1,6 @@
 // import 'dart:convert';
 import "package:flutter/material.dart";
+import 'package:home_quote/settings.dart';
 import 'global.dart';
 import 'package:provider/provider.dart';
 // import "quotes_prefs.dart";
@@ -38,6 +39,7 @@ class _QuotesPageState extends State<QuotesPage> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<MyColors>(context, listen: false).loadColors();
     return Consumer<MyColors>(builder: (context, clrs, child) {
       return FutureBuilder(
           future:
@@ -50,8 +52,8 @@ class _QuotesPageState extends State<QuotesPage> {
             }
             return Scaffold(
                 floatingActionButton: FloatingActionButton(
-                    foregroundColor: clrs.getColorC,
-                    backgroundColor: clrs.getTextC,
+                    backgroundColor: clrs.getColorC,
+                    foregroundColor: clrs.getTextC,
                     child: const Icon(Icons.add),
                     onPressed: () {
                       showDialog(
@@ -65,6 +67,15 @@ class _QuotesPageState extends State<QuotesPage> {
                   title: const Text("My Quotes"),
                   backgroundColor: clrs.getTextC,
                   foregroundColor: clrs.getColorC,
+                  actions: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  const SettingsPageWidget()));
+                        },
+                        icon: const Icon(Icons.settings))
+                  ],
                 ),
                 body: Column(
                   children: [
@@ -209,7 +220,9 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
           UnderlineInputBorder(borderSide: BorderSide(color: clrs.getColorC!));
 
       return AlertDialog(
+        backgroundColor: clrs.getTextC,
         content: TextField(
+            cursorColor: clrs.getColorC,
             controller: textEditingController,
             style: TextStyle(color: clrs.getColorC),
             decoration: InputDecoration(focusedBorder: border, border: border)),

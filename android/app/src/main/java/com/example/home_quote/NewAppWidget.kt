@@ -3,11 +3,9 @@ package com.example.home_quote
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
-import java.io.File
+
 
 /**
  * Implementation of App Widget functionality.
@@ -41,9 +39,9 @@ internal fun updateAppWidget(
 ) {
     val widgetData = HomeWidgetPlugin.getData(context)
     val views = RemoteViews(context.packageName, R.layout.new_app_widget).apply{
-        
     val visible = widgetData.getString("visible","Error")
-    setTextViewText(R.id.visible,visible)
+        setTextViewText(R.id.visible,visible)
+
     }
     appWidgetManager.updateAppWidget(appWidgetId,views)
 }
