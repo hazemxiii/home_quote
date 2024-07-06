@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:home_quote/global.dart";
 import "package:provider/provider.dart";
 
+// defines which color is being edited
 enum PickerModes { main, text }
 
 class SettingsPageWidget extends StatefulWidget {
@@ -23,10 +24,24 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             title: const Text("Settings"),
             centerTitle: true,
           ),
-          body: const Column(
+          body: Column(
             children: [
-              ColorPicker(mode: PickerModes.main, text: "Widget Color"),
-              ColorPicker(mode: PickerModes.text, text: "Text Color")
+              SwitchListTile(
+                value: clrs.isTransparent,
+                onChanged: (v) {
+                  Provider.of<MyColors>(context, listen: false)
+                      .toggleTransparent();
+                },
+                title: const Text("Transparent Background"),
+                tileColor: clrs.getTextC,
+                activeColor: clrs.getColorC,
+                inactiveThumbColor:
+                    Color.lerp(clrs.getTextC, clrs.getColorC, .8),
+                inactiveTrackColor:
+                    Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+              ),
+              const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
+              const ColorPicker(mode: PickerModes.text, text: "Text Color")
             ],
           ));
     });
@@ -97,6 +112,7 @@ class ColorPalette extends StatefulWidget {
 }
 
 class _ColorPaletteState extends State<ColorPalette> {
+  // the colors supported by the app
   List colors = [
     [0, 0, 0],
     [255, 255, 255],

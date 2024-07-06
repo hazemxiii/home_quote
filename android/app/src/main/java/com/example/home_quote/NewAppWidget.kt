@@ -19,7 +19,6 @@ class NewAppWidget : AppWidgetProvider() {
     ) {
         // There may be multiple widgets active, so update all of them
         for (appWidgetId in appWidgetIds) {
-            println("hi")
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
     }
@@ -44,7 +43,6 @@ internal fun updateAppWidget(
 
     val color = widgetData.getString("color","#000000")
     val textColor = Color.parseColor(widgetData.getString("textColor", "#ffffff"))
-        
     if(color == "#000000"){
         this.setInt(R.id.visible,"setBackgroundResource",R.drawable.back_000000)
     }else if(color == "#ffffff"){
@@ -75,6 +73,8 @@ internal fun updateAppWidget(
         this.setInt(R.id.visible,"setBackgroundResource",R.drawable.back_646400)
     }else if(color == "#006400"){
         this.setInt(R.id.visible,"setBackgroundResource",R.drawable.back_006400)
+    }else if(color == "transparent"){
+        this.setInt(R.id.visible,"setBackgroundResource",R.drawable.back_transparent)
     }
     setTextColor(R.id.visible,textColor)
 

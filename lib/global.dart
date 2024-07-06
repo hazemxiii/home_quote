@@ -8,8 +8,10 @@ import 'package:home_widget/home_widget.dart';
 class MyColors extends ChangeNotifier {
   Color textColor = const Color.fromRGBO(255, 255, 255, 1);
   Color color = const Color.fromRGBO(50, 50, 50, 1);
+  bool transparent = false;
 
   void loadColors() async {
+    /// used when the page first is loaded to get the colors
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey("color")) {
       prefs.setString("color", getHex(color));
@@ -17,9 +19,12 @@ class MyColors extends ChangeNotifier {
     if (!prefs.containsKey("textColor")) {
       prefs.setString("textColor", getHex(textColor));
     }
-
+    if (!prefs.containsKey("transparent")) {
+      prefs.setBool("transparent", false);
+    }
     textColor = parseColorFromHex(prefs.getString("textColor")!);
     color = parseColorFromHex(prefs.getString("color")!);
+    transparent = prefs.getBool("transparent")!;
 
     updateWidgetColors();
 
@@ -27,9 +32,11 @@ class MyColors extends ChangeNotifier {
   }
 
   void updateWidgetColors() {
+    /// updates the colors of the home widget
     try {
       if (!Platform.isWindows) {
-        HomeWidget.saveWidgetData("color", "#${getHex(color)}");
+        HomeWidget.saveWidgetData(
+            "color", !transparent ? "#${getHex(color)}" : "transparent");
         HomeWidget.saveWidgetData("textColor", "#${getHex(textColor)}");
         HomeWidget.updateWidget(
           qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
@@ -41,6 +48,7 @@ class MyColors extends ChangeNotifier {
   }
 
   void setTextColor(Color c) async {
+    /// changes text color
     SharedPreferences prefs = await SharedPreferences.getInstance();
     textColor = c;
     prefs.setString("textColor", getHex(textColor));
@@ -49,6 +57,7 @@ class MyColors extends ChangeNotifier {
   }
 
   void setColor(Color c) async {
+    /// changes text widget background color
     SharedPreferences prefs = await SharedPreferences.getInstance();
     color = c;
     prefs.setString("color", getHex(color));
@@ -56,7 +65,17 @@ class MyColors extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleTransparent() async {
+    /// toggles transparent background
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    transparent = !transparent;
+    prefs.setBool("transparent", transparent);
+    updateWidgetColors();
+    notifyListeners();
+  }
+
   String getHex(Color c) {
+    /// gets the hex code from the color without the "#"
     Map hexs = {10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f"};
 
     int red0 = (c.red / 16).floor();
@@ -77,6 +96,7 @@ class MyColors extends ChangeNotifier {
   }
 
   Color parseColorFromHex(String hex) {
+    /// gets the color from the hex code
     int r = colorFromChannel(hex.substring(0, 2));
     int g = colorFromChannel(hex.substring(2, 4));
     int b = colorFromChannel(hex.substring(4, 6));
@@ -85,12 +105,15 @@ class MyColors extends ChangeNotifier {
   }
 
   int colorFromChannel(String channel) {
+    /// gets the the hex code of r or g or b
     channel = channel.toLowerCase();
     Map hex = {"a": 10, "b": 11, "c": 12, "d": 13, "e": 14, "f": 15};
 
+    // hex code is defined as ff -> (left)(right)
     int left;
     int right;
 
+    // if it's not a number, then we get the equivalant number in base 16
     try {
       left = int.parse(channel[0]);
     } catch (e) {
@@ -103,27 +126,22 @@ class MyColors extends ChangeNotifier {
       right = hex[channel[1]];
     }
 
+    // return the equivalant value in decimal
     return left * 16 + right;
   }
 
   Color get getTextC => textColor;
   Color? get getColorC => color;
+  bool get isTransparent => transparent;
 }
 
 class QuotesNotifier extends ChangeNotifier {
-  /*
-  prefs keys:
-  quotes -> map of {id:quote}
-  selected -> list of selected ids
-  visible -> the current visible quote
-  isMulti -> multiple selection active
-   */
-
   Map quotes = {};
   List<String> selected = [];
   String visible = "";
   bool isMulti = false;
   Future<bool> loadData() async {
+    /// loads the quotes with all relevant data
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (!prefs.containsKey("quotes")) {
@@ -154,7 +172,9 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void toggleIsMulti() async {
+    /// toggles mutli selection
     isMulti = !isMulti;
+    // if we have more than 1 selected and we turned mutli off, deselect all
     if (!isMulti && selected.length > 1) {
       clearSelection();
     }
@@ -168,6 +188,7 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void addQuote(String quote) async {
+    /// adds quote to the data
     String key = DateTime.now().toString();
     quotes[key] = quote;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -176,10 +197,12 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void deleteQuote(String id) async {
+    /// deletes a quote
     quotes.remove(id);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", jsonEncode(quotes));
 
+// remove the quote from selected if it's there, else just update the UI
     if (selected.contains(id)) {
       selectQuote(id);
     } else {
@@ -188,10 +211,12 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   selectQuote(String id) async {
+    /// selects or deselects a quote
     if (selected.contains(id)) {
       selected.remove(id);
       changeVisible();
     } else {
+      // if it's signle selection mode, make it the only quote in selected, else add it
       if (isMulti) {
         selected.add(id);
       } else {
@@ -206,6 +231,9 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void changeVisible() async {
+    /// changes the current visible quote
+
+    // get a random quote from selection
     if (selected.isNotEmpty) {
       visible = quotes[selected[Random().nextInt(selected.length)]];
     } else {
@@ -217,6 +245,7 @@ class QuotesNotifier extends ChangeNotifier {
     prefs.setString("visible", visible);
 
     notifyListeners();
+
     try {
       if (!Platform.isWindows) {
         HomeWidget.saveWidgetData("visible", visible);
@@ -230,6 +259,7 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void clearSelection() async {
+    /// removes all selected quotes
     selected = [];
     visible = "";
     SharedPreferences prefs = await SharedPreferences.getInstance();
