@@ -23,6 +23,13 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+dependencies {
+    // Other dependencies
+
+    implementation "androidx.work:work-runtime:2.8.1"
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+}
+
 android {
     namespace = "com.example.home_quote"
     compileSdk = flutter.compileSdkVersion

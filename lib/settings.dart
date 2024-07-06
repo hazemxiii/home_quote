@@ -32,7 +32,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                   Provider.of<MyColors>(context, listen: false)
                       .toggleTransparent();
                 },
-                title: const Text("Transparent Background"),
+                title: Text(
+                  "Transparent Background",
+                  style: TextStyle(color: clrs.getColorC),
+                ),
                 tileColor: clrs.getTextC,
                 activeColor: clrs.getColorC,
                 inactiveThumbColor:
@@ -41,7 +44,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                     Color.lerp(clrs.getTextC, clrs.getColorC, .2),
               ),
               const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
-              const ColorPicker(mode: PickerModes.text, text: "Text Color")
+              const ColorPicker(mode: PickerModes.text, text: "Text Color"),
             ],
           ));
     });

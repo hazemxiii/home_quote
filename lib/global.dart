@@ -163,8 +163,9 @@ class QuotesNotifier extends ChangeNotifier {
     quotes = jsonDecode(prefs.getString("quotes")!);
     selected = prefs.getStringList("selected")!;
     isMulti = prefs.getBool("isMulti")!;
+    visible = prefs.getString("visible")!;
 
-    changeVisible();
+    // changeVisible();
 
     notifyListeners();
 

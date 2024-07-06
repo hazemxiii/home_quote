@@ -1,9 +1,48 @@
+import 'dart:convert';
+import 'dart:math';
+
 import "package:flutter/material.dart";
 import 'package:home_quote/settings.dart';
+import 'package:home_widget/home_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'global.dart';
 import 'package:provider/provider.dart';
+import 'package:workmanager/workmanager.dart';
+
+@pragma(
+    'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      Map quotes = jsonDecode(prefs.getString("quotes")!);
+      List<String> selected = prefs.getStringList("selected")!;
+      String visible = prefs.getString("visible")!;
+
+      String random = visible;
+      while (random == visible && selected.isNotEmpty) {
+        random = quotes[selected[Random().nextInt(selected.length)]];
+      }
+
+      prefs.setString("visible", random);
+
+      HomeWidget.saveWidgetData("visible", random);
+      HomeWidget.updateWidget(
+        qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
+      );
+    } catch (e) {
+      // print(e);
+    }
+    return Future.value(true);
+  });
+}
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  Workmanager().registerPeriodicTask("uniqueName", "taskName",
+      frequency: const Duration(minutes: 15),
+      initialDelay: const Duration(minutes: 1));
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => MyColors()),
@@ -77,25 +116,31 @@ class _QuotesPageState extends State<QuotesPage> {
                 ),
                 body: Column(
                   children: [
-                    Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        height: 100,
-                        margin: const EdgeInsets.all(20),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
-                          color: clrs.getColorC,
-                        ),
-                        child: Consumer<QuotesNotifier>(
-                          builder: (context, qNotifier, child) {
-                            return Text(
-                              qNotifier.getVisible,
-                              style: TextStyle(color: clrs.getTextC),
-                            );
-                          },
-                        )),
+                    InkWell(
+                      onTap: () {
+                        Provider.of<QuotesNotifier>(context, listen: false)
+                            .changeVisible();
+                      },
+                      child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          height: 100,
+                          margin: const EdgeInsets.all(20),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                            color: clrs.getColorC,
+                          ),
+                          child: Consumer<QuotesNotifier>(
+                            builder: (context, qNotifier, child) {
+                              return Text(
+                                qNotifier.getVisible,
+                                style: TextStyle(color: clrs.getTextC),
+                              );
+                            },
+                          )),
+                    ),
                     const MultipleSelectionWidget(),
                     Expanded(child: SingleChildScrollView(
                       child: Consumer<QuotesNotifier>(
@@ -213,16 +258,16 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   @override
   Widget build(BuildContext context) {
     return Consumer<MyColors>(builder: (context, clrs, child) {
-      TextStyle btnStyle = TextStyle(color: clrs.getColorC);
+      TextStyle btnStyle = TextStyle(color: clrs.getTextC);
       InputBorder border =
-          UnderlineInputBorder(borderSide: BorderSide(color: clrs.getColorC!));
+          UnderlineInputBorder(borderSide: BorderSide(color: clrs.getTextC));
 
       return AlertDialog(
-        backgroundColor: clrs.getTextC,
+        backgroundColor: clrs.getColorC,
         content: TextField(
-            cursorColor: clrs.getColorC,
+            cursorColor: clrs.getTextC,
             controller: textEditingController,
-            style: TextStyle(color: clrs.getColorC),
+            style: TextStyle(color: clrs.getTextC),
             decoration: InputDecoration(focusedBorder: border, border: border)),
         actions: [
           TextButton(
@@ -271,10 +316,11 @@ class _MultipleSelectionWidgetState extends State<MultipleSelectionWidget> {
             tileColor: clrs.getTextC,
             title: Text(
               "Multiple selection",
-              style: TextStyle(color: clrs.color),
+              style: TextStyle(color: clrs.getColorC),
             ),
             value: qNotifer.getIsMulti,
-            activeColor: clrs.color,
+            fillColor: WidgetStatePropertyAll(clrs.getColorC),
+            checkColor: clrs.getTextC,
             onChanged: (v) {
               Provider.of<QuotesNotifier>(context, listen: false)
                   .toggleIsMulti();
