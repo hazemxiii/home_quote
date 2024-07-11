@@ -4,7 +4,9 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.graphics.Color
+import android.net.Uri
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
 
 
@@ -17,11 +19,15 @@ class NewAppWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+
         // There may be multiple widgets active, so update all of them
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
+
     }
+
+
 
     override fun onEnabled(context: Context) {
         // Enter relevant functionality for when the first widget is created
@@ -80,6 +86,12 @@ internal fun updateAppWidget(
 
     val visible = widgetData.getString("visible","Error")
     setTextViewText(R.id.visible,visible)
+
+        val pendingIntentWithData = HomeWidgetLaunchIntent.getActivity(
+            context,
+            MainActivity::class.java,
+            Uri.parse("home_widget://message?message=mm"))
+        setOnClickPendingIntent(R.id.widget, pendingIntentWithData)
 
     }
     appWidgetManager.updateAppWidget(appWidgetId,views)

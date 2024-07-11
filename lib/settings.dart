@@ -15,7 +15,7 @@ class SettingsPageWidget extends StatefulWidget {
 class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Scaffold(
           backgroundColor: clrs.getTextC,
           appBar: AppBar(
@@ -24,28 +24,31 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             title: const Text("Settings"),
             centerTitle: true,
           ),
-          body: Column(
-            children: [
-              SwitchListTile(
-                value: clrs.isTransparent,
-                onChanged: (v) {
-                  Provider.of<MyColors>(context, listen: false)
-                      .toggleTransparent();
-                },
-                title: Text(
-                  "Transparent Background",
-                  style: TextStyle(color: clrs.getColorC),
+          body: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  value: clrs.isTransparent,
+                  onChanged: (v) {
+                    Provider.of<StyleNotifier>(context, listen: false)
+                        .toggleTransparent();
+                  },
+                  title: Text(
+                    "Transparent Background",
+                    style: TextStyle(color: clrs.getColorC),
+                  ),
+                  tileColor: clrs.getTextC,
+                  activeColor: clrs.getColorC,
+                  inactiveThumbColor:
+                      Color.lerp(clrs.getTextC, clrs.getColorC, .8),
+                  inactiveTrackColor:
+                      Color.lerp(clrs.getTextC, clrs.getColorC, .2),
                 ),
-                tileColor: clrs.getTextC,
-                activeColor: clrs.getColorC,
-                inactiveThumbColor:
-                    Color.lerp(clrs.getTextC, clrs.getColorC, .8),
-                inactiveTrackColor:
-                    Color.lerp(clrs.getTextC, clrs.getColorC, .2),
-              ),
-              const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
-              const ColorPicker(mode: PickerModes.text, text: "Text Color"),
-            ],
+                const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
+                const ColorPicker(mode: PickerModes.text, text: "Text Color"),
+              ],
+            ),
           ));
     });
   }
@@ -63,7 +66,7 @@ class ColorPicker extends StatefulWidget {
 class _ColorPickerState extends State<ColorPicker> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return InkWell(
         onTap: () {
           showDialog(
@@ -86,7 +89,7 @@ class _ColorPickerState extends State<ColorPicker> {
         },
         child: Container(
           padding: const EdgeInsets.all(10),
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
           decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               border: Border.all(color: clrs.getColorC!),
@@ -146,7 +149,7 @@ class _ColorPaletteState extends State<ColorPalette> {
           itemBuilder: (context, i) {
             List c = colors[i];
             Color color = Color.fromRGBO(c[0], c[1], c[2], 1);
-            return Consumer<MyColors>(builder: (context, clrs, child) {
+            return Consumer<StyleNotifier>(builder: (context, clrs, child) {
               Color? active;
               if (widget.mode == PickerModes.text) {
                 active = clrs.getTextC;
@@ -156,10 +159,10 @@ class _ColorPaletteState extends State<ColorPalette> {
               return InkWell(
                 onTap: () {
                   if (widget.mode == PickerModes.text) {
-                    Provider.of<MyColors>(context, listen: false)
+                    Provider.of<StyleNotifier>(context, listen: false)
                         .setTextColor(color);
                   } else {
-                    Provider.of<MyColors>(context, listen: false)
+                    Provider.of<StyleNotifier>(context, listen: false)
                         .setColor(color);
                   }
                 },

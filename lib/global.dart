@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
 
-class MyColors extends ChangeNotifier {
+class StyleNotifier extends ChangeNotifier {
   Color textColor = const Color.fromRGBO(255, 255, 255, 1);
   Color color = const Color.fromRGBO(50, 50, 50, 1);
   bool transparent = false;
 
-  void loadColors() async {
+  void loadStyle() async {
     /// used when the page first is loaded to get the colors
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey("color")) {
@@ -22,6 +22,7 @@ class MyColors extends ChangeNotifier {
     if (!prefs.containsKey("transparent")) {
       prefs.setBool("transparent", false);
     }
+
     textColor = parseColorFromHex(prefs.getString("textColor")!);
     color = parseColorFromHex(prefs.getString("color")!);
     transparent = prefs.getBool("transparent")!;
@@ -188,6 +189,23 @@ class QuotesNotifier extends ChangeNotifier {
     return selected.contains(id);
   }
 
+  void selectAll() async {
+    /// selects all
+
+    // if it's single mode change it to multi
+    if (!isMulti) {
+      toggleIsMulti();
+    }
+
+    List keys = quotes.keys.toList();
+    for (int i = 0; i < keys.length; i++) {
+      if (!selected.contains(keys[i])) {
+        selectQuote(keys[i]);
+      }
+    }
+    notifyListeners();
+  }
+
   void addQuote(String quote) async {
     /// adds quote to the data
     String key = DateTime.now().toString();
@@ -236,7 +254,7 @@ class QuotesNotifier extends ChangeNotifier {
 
     // get a random quote from selection
     if (selected.isNotEmpty) {
-      visible = quotes[selected[Random().nextInt(selected.length)]];
+      visible = quotes[selected[Random().nextInt(selected.length)]]!;
     } else {
       visible = "";
     }

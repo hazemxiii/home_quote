@@ -20,5 +20,6 @@
         android:layout_marginBottom="0dp"
         android:padding="20px"
         android:text="Loading..."
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        />
 </RelativeLayout>

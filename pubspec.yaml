@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.2.3
   home_widget: ^0.6.0
   workmanager: ^0.5.2
+  fluttertoast: ^8.2.6
 
 dev_dependencies:
   flutter_test:

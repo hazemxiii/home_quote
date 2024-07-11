@@ -2,7 +2,7 @@
 
 ## get data from prefs
 
-- MyColors.loadColors()
+- StyleNotifier.loadColors()
 - QuotesNotifier.loadData()
 
 ## select/deselect quote
@@ -23,7 +23,7 @@
 
 ## toggle transparent background
 
-- MyColors.toggleTransparent()
+- StyleNotifier.toggleTransparent()
 
 ## predefined colors
 
@@ -31,5 +31,9 @@
 
 ## change text & background colors
 
-- MyColors.setTextColor()
-- MyColors.setColor()
+- StyleNotifier.setTextColor()
+- StyleNotifier.setColor()
+
+## select all
+
+- QuotesNotifier.selectAll()

@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
 import "package:flutter/material.dart";
 import 'package:home_quote/settings.dart';
 import 'package:home_widget/home_widget.dart';
@@ -38,14 +38,15 @@ void callbackDispatcher() {
 }
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  Workmanager().registerPeriodicTask("uniqueName", "taskName",
-      frequency: const Duration(minutes: 15),
-      initialDelay: const Duration(minutes: 1));
+  // WidgetsFlutterBinding.ensureInitialized();
+  // Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+  // Workmanager().registerPeriodicTask("uniqueName", "taskName",
+  //     frequency: const Duration(minutes: 15),
+  //     initialDelay: const Duration(minutes: 15));
+
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => MyColors()),
+      ChangeNotifierProvider(create: (context) => StyleNotifier()),
       ChangeNotifierProvider(create: (context) => QuotesNotifier())
     ],
     child: const App(),
@@ -76,8 +77,8 @@ class _QuotesPageState extends State<QuotesPage> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<MyColors>(context, listen: false).loadColors();
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    Provider.of<StyleNotifier>(context, listen: false).loadStyle();
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return FutureBuilder(
           future:
               Provider.of<QuotesNotifier>(context, listen: false).loadData(),
@@ -142,6 +143,27 @@ class _QuotesPageState extends State<QuotesPage> {
                           )),
                     ),
                     const MultipleSelectionWidget(),
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 20),
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5))),
+                          child: IconButton(
+                            onPressed: () {
+                              Provider.of<QuotesNotifier>(context,
+                                      listen: false)
+                                  .selectAll();
+                            },
+                            icon: Icon(
+                              Icons.select_all,
+                              color: clrs.getColorC,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     Expanded(child: SingleChildScrollView(
                       child: Consumer<QuotesNotifier>(
                           builder: (context, qNotifier, child) {
@@ -186,7 +208,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return InkWell(
         onTap: () {
           Provider.of<QuotesNotifier>(context, listen: false)
@@ -257,7 +279,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       TextStyle btnStyle = TextStyle(color: clrs.getTextC);
       InputBorder border =
           UnderlineInputBorder(borderSide: BorderSide(color: clrs.getTextC));
@@ -310,7 +332,7 @@ class _MultipleSelectionWidgetState extends State<MultipleSelectionWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyColors>(builder: (context, clrs, child) {
+    return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Consumer<QuotesNotifier>(builder: (context, qNotifer, child) {
         return CheckboxListTile(
             tileColor: clrs.getTextC,
@@ -319,7 +341,7 @@ class _MultipleSelectionWidgetState extends State<MultipleSelectionWidget> {
               style: TextStyle(color: clrs.getColorC),
             ),
             value: qNotifer.getIsMulti,
-            fillColor: WidgetStatePropertyAll(clrs.getColorC),
+            activeColor: clrs.getColorC,
             checkColor: clrs.getTextC,
             onChanged: (v) {
               Provider.of<QuotesNotifier>(context, listen: false)
