@@ -1,6 +1,13 @@
+import "dart:convert";
+import "dart:io";
+import "dart:typed_data";
+// import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import "package:flutter/material.dart";
 import "package:home_quote/global.dart";
 import "package:provider/provider.dart";
+import 'package:flex_color_picker/flex_color_picker.dart' as color_p;
+import 'package:file_picker/file_picker.dart';
 
 // defines which color is being edited
 enum PickerModes { main, text }
@@ -47,6 +54,67 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 ),
                 const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
                 const ColorPicker(mode: PickerModes.text, text: "Text Color"),
+                const SizedBox(
+                  height: 10,
+                ),
+                Consumer<QuotesNotifier>(builder: (context, qts, child) {
+                  return InkWell(
+                    onTap: () async {
+                      await grantFilesPermession();
+                      String? outputFile = await FilePicker.platform.saveFile(
+                          dialogTitle:
+                              'Select where you want to put your file:',
+                          fileName: 'quotes.qts',
+                          bytes: Uint8List(1));
+
+                      if (outputFile == null) return;
+
+                      File(outputFile).writeAsString(
+                        "${jsonEncode(qts.getQuotes)}\n${qts.getSelected.join(",")}",
+                      );
+                    },
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 10),
+                        decoration: BoxDecoration(
+                            color:
+                                Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10))),
+                        child: Icon(
+                          Icons.upload,
+                          color: clrs.getColorC,
+                        )),
+                  );
+                }),
+                const SizedBox(height: 5),
+                InkWell(
+                  onTap: () async {
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
+
+                    if (result == null) return;
+
+                    File file = File(result.files.single.path!);
+
+                    if (context.mounted) {
+                      Provider.of<QuotesNotifier>(context, listen: false)
+                          .setDataFromFile(file);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 10),
+                    decoration: BoxDecoration(
+                        color: Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10))),
+                    child: Icon(
+                      Icons.download,
+                      color: clrs.getColorC,
+                    ),
+                  ),
+                )
               ],
             ),
           ));
@@ -83,7 +151,22 @@ class _ColorPickerState extends State<ColorPicker> {
                           style: TextStyle(color: clrs.getTextC)),
                     )
                   ],
-                  content: ColorPalette(mode: widget.mode),
+                  content: widget.mode == PickerModes.main
+                      ? ColorPalette(mode: widget.mode)
+                      : color_p.ColorPicker(
+                          pickersEnabled: const {
+                            color_p.ColorPickerType.wheel: true,
+                            color_p.ColorPickerType.accent: false,
+                            color_p.ColorPickerType.primary: false
+                          },
+                          colorCodeHasColor: true,
+                          showColorCode: true,
+                          color: clrs.getTextC,
+                          onColorChanged: (color) {
+                            Provider.of<StyleNotifier>(context, listen: false)
+                                .setTextColor(color);
+                          },
+                        ),
                 );
               });
         },
@@ -185,4 +268,11 @@ class _ColorPaletteState extends State<ColorPalette> {
           }),
     );
   }
+}
+
+Future<bool> grantFilesPermession() async {
+  var manage = Permission.storage;
+  await manage.request();
+
+  return Future.value(true);
 }

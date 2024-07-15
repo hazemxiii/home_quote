@@ -173,6 +173,24 @@ class QuotesNotifier extends ChangeNotifier {
     return Future.value(true);
   }
 
+  void setDataFromFile(File f) async {
+    List data = (await f.readAsString()).split("\n");
+
+    String quotesString = data[0];
+    quotes = jsonDecode(quotesString);
+    selected = data[1].split(",");
+
+    if (selected.length > 1 && !isMulti) {
+      toggleIsMulti();
+    }
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("quotes", quotesString);
+    prefs.setStringList("selected", selected);
+
+    changeVisible();
+  }
+
   void toggleIsMulti() async {
     /// toggles mutli selection
     isMulti = !isMulti;
@@ -229,7 +247,24 @@ class QuotesNotifier extends ChangeNotifier {
     }
   }
 
-  selectQuote(String id) async {
+  void editQuote(String id, String newVal) async {
+    /// Edit a quote
+
+    // the quote before the edit
+    String old = quotes[id];
+    quotes[id] = newVal;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("quotes", jsonEncode(quotes));
+
+    // if the quote is the visible one, change the visible
+    if (visible == old) {
+      changeVisible();
+    }
+    notifyListeners();
+  }
+
+  void selectQuote(String id) async {
     /// selects or deselects a quote
     if (selected.contains(id)) {
       selected.remove(id);
@@ -253,9 +288,9 @@ class QuotesNotifier extends ChangeNotifier {
     /// changes the current visible quote
 
     // get a random quote from selection
-    if (selected.isNotEmpty) {
-      visible = quotes[selected[Random().nextInt(selected.length)]]!;
-    } else {
+    try {
+      visible = quotes[selected[Random().nextInt(selected.length)]];
+    } catch (e) {
       visible = "";
     }
 
@@ -288,4 +323,5 @@ class QuotesNotifier extends ChangeNotifier {
   String get getVisible => visible;
   bool get getIsMulti => isMulti;
   Map get getQuotes => quotes;
+  List get getSelected => selected;
 }

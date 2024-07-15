@@ -107,6 +107,16 @@ class _QuotesPageState extends State<QuotesPage> {
                   foregroundColor: clrs.getColorC,
                   actions: [
                     IconButton(
+                      onPressed: () {
+                        Provider.of<QuotesNotifier>(context, listen: false)
+                            .selectAll();
+                      },
+                      icon: Icon(
+                        Icons.select_all,
+                        color: clrs.getColorC,
+                      ),
+                    ),
+                    IconButton(
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) =>
@@ -143,27 +153,6 @@ class _QuotesPageState extends State<QuotesPage> {
                           )),
                     ),
                     const MultipleSelectionWidget(),
-                    Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(left: 20),
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                          child: IconButton(
-                            onPressed: () {
-                              Provider.of<QuotesNotifier>(context,
-                                      listen: false)
-                                  .selectAll();
-                            },
-                            icon: Icon(
-                              Icons.select_all,
-                              color: clrs.getColorC,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                     Expanded(child: SingleChildScrollView(
                       child: Consumer<QuotesNotifier>(
                           builder: (context, qNotifier, child) {
@@ -178,7 +167,10 @@ class _QuotesPageState extends State<QuotesPage> {
                           );
                         }));
                       }),
-                    ))
+                    )),
+                    const SizedBox(
+                      height: 20,
+                    )
                   ],
                 ));
           });
@@ -201,18 +193,61 @@ class QuoteWidget extends StatefulWidget {
 }
 
 class _QuoteWidgetState extends State<QuoteWidget> {
+  late TextEditingController editController;
   @override
   void initState() {
+    editController = TextEditingController(text: widget.quote);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    editController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
+      TextStyle btnStyle = TextStyle(color: clrs.getTextC);
+      InputBorder border =
+          UnderlineInputBorder(borderSide: BorderSide(color: clrs.getTextC));
       return InkWell(
         onTap: () {
           Provider.of<QuotesNotifier>(context, listen: false)
               .selectQuote(widget.id);
+        },
+        onLongPress: () {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  backgroundColor: clrs.getColorC,
+                  content: TextField(
+                      cursorColor: clrs.getTextC,
+                      controller: editController,
+                      style: TextStyle(color: clrs.getTextC),
+                      decoration: InputDecoration(
+                          focusedBorder: border, border: border)),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("cancel", style: btnStyle)),
+                    TextButton(
+                        onPressed: () {
+                          Provider.of<QuotesNotifier>(context, listen: false)
+                              .editQuote(widget.id, editController.text);
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          "save",
+                          style: btnStyle,
+                        ))
+                  ],
+                );
+              });
         },
         child: Dismissible(
           confirmDismiss: (direction) async {
@@ -241,8 +276,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
           },
           child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
@@ -275,6 +309,12 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   void initState() {
     textEditingController = TextEditingController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
   }
 
   @override
