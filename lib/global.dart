@@ -2,13 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:home_quote/models/quote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
+
+final c = Color.lerp(Colors.black, Colors.white, 0.9);
 
 class StyleNotifier extends ChangeNotifier {
   Color textColor = const Color.fromRGBO(255, 255, 255, 1);
   Color color = const Color.fromRGBO(50, 50, 50, 1);
   bool transparent = false;
+
+  StyleNotifier() {
+    loadStyle();
+  }
 
   void loadStyle() async {
     /// used when the page first is loaded to get the colors
@@ -77,23 +84,24 @@ class StyleNotifier extends ChangeNotifier {
 
   String getHex(Color c) {
     /// gets the hex code from the color without the "#"
-    Map hexs = {10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f"};
+    // Map hexs = {10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f"};
 
-    int red0 = (c.red / 16).floor();
-    int red1 = c.red - red0 * 16;
-    int green0 = (c.green / 16).floor();
-    int green1 = c.green - green0 * 16;
-    int blue0 = (c.blue / 16).floor();
-    int blue1 = c.blue - blue0 * 16;
+    // int red0 = (c.red / 16).floor();
+    // int red1 = c.red - red0 * 16;
+    // int green0 = (c.green / 16).floor();
+    // int green1 = c.green - green0 * 16;
+    // int blue0 = (c.blue / 16).floor();
+    // int blue1 = c.blue - blue0 * 16;
 
-    String red =
-        "${red0 > 9 ? hexs[red0] : red0}${red1 > 9 ? hexs[red1] : red1}";
-    String green =
-        "${green0 > 9 ? hexs[green0] : green0}${green1 > 9 ? hexs[green1] : green1}";
-    String blue =
-        "${blue0 > 9 ? hexs[blue0] : blue0}${blue1 > 9 ? hexs[blue1] : blue1}";
+    // String red =
+    //     "${red0 > 9 ? hexs[red0] : red0}${red1 > 9 ? hexs[red1] : red1}";
+    // String green =
+    //     "${green0 > 9 ? hexs[green0] : green0}${green1 > 9 ? hexs[green1] : green1}";
+    // String blue =
+    //     "${blue0 > 9 ? hexs[blue0] : blue0}${blue1 > 9 ? hexs[blue1] : blue1}";
 
-    return "$red$green$blue";
+    // return "$red$green$blue";
+    return '#${c.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
   }
 
   Color parseColorFromHex(String hex) {
@@ -137,40 +145,57 @@ class StyleNotifier extends ChangeNotifier {
 }
 
 class QuotesNotifier extends ChangeNotifier {
-  Map quotes = {};
-  List<String> selected = [];
-  String visible = "";
-  bool isMulti = false;
+  List<Quote> quotes = [];
+  // List<String> selected = [];
+  Quote? visible;
+  // bool isMulti = false;
+
+  QuotesNotifier() {
+    loadData();
+  }
+
   Future<bool> loadData() async {
     /// loads the quotes with all relevant data
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    if (!prefs.containsKey("quotes")) {
-      prefs.setString("quotes", "{}");
+    if (!prefs.containsKey('myQuotes')) {
+      prefs.setString('myQuotes', jsonEncode([]));
+    }
+    final q = jsonDecode(prefs.getString("myQuotes")!);
+    for (final e in q) {
+      final quote = Quote.fromJson(Map<String, dynamic>.from(e));
+      if (quote.quote == prefs.getString("visible")) {
+        visible = quote;
+      }
+      quotes.add(quote);
     }
 
-    if (!prefs.containsKey("selected")) {
-      prefs.setStringList("selected", []);
-    }
+    // if (!prefs.containsKey("quotes")) {
+    //   prefs.setString("quotes", "{}");
+    // }
 
-    if (!prefs.containsKey("visible")) {
-      prefs.setString("visible", "");
-    }
+    // if (!prefs.containsKey("selected")) {
+    //   prefs.setStringList("selected", []);
+    // }
 
-    if (!prefs.containsKey("isMulti")) {
-      prefs.setBool("isMulti", false);
-    }
+    // if (!prefs.containsKey("visible")) {
+    //   prefs.setString("visible", "");
+    // }
 
-    quotes = jsonDecode(prefs.getString("quotes")!);
-    selected = prefs.getStringList("selected")!;
-    isMulti = prefs.getBool("isMulti")!;
-    visible = prefs.getString("visible")!;
+    // if (!prefs.containsKey("isMulti")) {
+    //   prefs.setBool("isMulti", false);
+    // }
+
+    // quotes = jsonDecode(prefs.getString("quotes")!);
+    // selected = prefs.getStringList("selected")!;
+    // isMulti = prefs.getBool("isMulti")!;
+    // visible = prefs.getString("visible")!;
 
     // changeVisible();
 
     notifyListeners();
 
-    return Future.value(true);
+    return true;
   }
 
   void setDataFromFile(File f) async {
@@ -178,108 +203,114 @@ class QuotesNotifier extends ChangeNotifier {
 
     String quotesString = data[0];
     quotes = jsonDecode(quotesString);
-    selected = data[1].split(",");
+    // selected = data[1].split(",");
 
-    if (selected.length > 1 && !isMulti) {
-      toggleIsMulti();
-    }
+    // if (selected.length > 1 && !isMulti) {
+    //   toggleIsMulti();
+    // }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", quotesString);
-    prefs.setStringList("selected", selected);
+    // prefs.setStringList("selected", selected);
 
     changeVisible();
   }
 
-  void toggleIsMulti() async {
-    /// toggles mutli selection
-    isMulti = !isMulti;
-    // if we have more than 1 selected and we turned mutli off, deselect all
-    if (!isMulti && selected.length > 1) {
-      clearSelection();
-    }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("isMulti", isMulti);
-    notifyListeners();
-  }
+  // void toggleIsMulti() async {
+  //   /// toggles mutli selection
+  //   isMulti = !isMulti;
+  //   // if we have more than 1 selected and we turned mutli off, deselect all
+  //   if (!isMulti && selected.length > 1) {
+  //     clearSelection();
+  //   }
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setBool("isMulti", isMulti);
+  //   notifyListeners();
+  // }
 
-  bool isSelected(String id) {
-    return selected.contains(id);
-  }
+  // bool isSelected(String id) {
+  //   return selected.contains(id);
+  // }
 
   void selectAll() async {
     /// selects all
 
     // if it's single mode change it to multi
-    if (!isMulti) {
-      toggleIsMulti();
+    // if (!isMulti) {
+    //   toggleIsMulti();
+    // }
+    for (final q in quotes) {
+      q.selected = true;
     }
-
-    List keys = quotes.keys.toList();
-    for (int i = 0; i < keys.length; i++) {
-      if (!selected.contains(keys[i])) {
-        selectQuote(keys[i]);
-      }
-    }
+    // List keys = quotes.keys.toList();
+    // for (int i = 0; i < keys.length; i++) {
+    //   if (!selected.contains(keys[i])) {
+    //     selectQuote(keys[i]);
+    //   }
+    // }
     notifyListeners();
   }
 
   void addQuote(String quote) async {
     /// adds quote to the data
     String key = DateTime.now().toString();
-    quotes[key] = quote;
+    quotes.add(
+        Quote(id: key, quote: quote, selected: false, author: "", tags: []));
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("quotes", jsonEncode(quotes));
+    prefs.setString("myQuotes", jsonEncode(quotes));
     notifyListeners();
   }
 
-  void deleteQuote(String id) async {
+  void deleteQuote(Quote q) async {
     /// deletes a quote
-    quotes.remove(id);
+    quotes.remove(q);
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("quotes", jsonEncode(quotes));
+    prefs.setString("myQuotes", jsonEncode(quotes));
 
-// remove the quote from selected if it's there, else just update the UI
-    if (selected.contains(id)) {
-      selectQuote(id);
-    } else {
-      notifyListeners();
+    if (visible == q) {
+      changeVisible();
     }
+
+    notifyListeners();
   }
 
-  void editQuote(String id, String newVal) async {
+  void editQuote(Quote q, String newVal) async {
     /// Edit a quote
 
-    // the quote before the edit
-    String old = quotes[id];
-    quotes[id] = newVal;
+    q.quote = newVal;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", jsonEncode(quotes));
 
     // if the quote is the visible one, change the visible
-    if (visible == old) {
+    if (visible == q) {
       changeVisible();
     }
     notifyListeners();
   }
 
-  void selectQuote(String id) async {
+  void selectQuote(Quote q) async {
     /// selects or deselects a quote
-    if (selected.contains(id)) {
-      selected.remove(id);
+    q.selected = !q.selected;
+
+    // if (selected.contains(id)) {
+    //   selected.remove(id);
+    //   changeVisible();
+    // } else {
+    //   // if it's signle selection mode, make it the only quote in selected, else add it
+    //   if (isMulti) {
+    //     selected.add(id);
+    //   } else {
+    //     selected = [id];
+    //     changeVisible();
+    //   }
+    // }
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // prefs.setStringList("selected", selected);
+
+    if (q == visible) {
       changeVisible();
-    } else {
-      // if it's signle selection mode, make it the only quote in selected, else add it
-      if (isMulti) {
-        selected.add(id);
-      } else {
-        selected = [id];
-        changeVisible();
-      }
     }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setStringList("selected", selected);
 
     notifyListeners();
   }
@@ -289,20 +320,26 @@ class QuotesNotifier extends ChangeNotifier {
 
     // get a random quote from selection
     try {
-      visible = quotes[selected[Random().nextInt(selected.length)]];
+      // visible = quotes[selected[Random().nextInt(selected.length)]];
+      final selected = quotes.where((q) => q.selected).toList();
+      if (selected.isEmpty) {
+        visible = null;
+      } else {
+        visible = selected[Random().nextInt(selected.length)];
+      }
     } catch (e) {
-      visible = "";
+      visible = null;
     }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    prefs.setString("visible", visible);
+    prefs.setString("visible", visible?.quote ?? "");
 
     notifyListeners();
 
     try {
       if (!Platform.isWindows) {
-        HomeWidget.saveWidgetData("visible", visible);
+        HomeWidget.saveWidgetData("visible", visible?.quote ?? "");
         HomeWidget.updateWidget(
           qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
         );
@@ -314,14 +351,16 @@ class QuotesNotifier extends ChangeNotifier {
 
   void clearSelection() async {
     /// removes all selected quotes
-    selected = [];
-    visible = "";
+    for (final q in quotes) {
+      q.selected = false;
+    }
+    visible = null;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setStringList("selected", []);
   }
 
-  String get getVisible => visible;
-  bool get getIsMulti => isMulti;
-  Map get getQuotes => quotes;
-  List get getSelected => selected;
+  Quote? get getVisible => visible;
+  // bool get getIsMulti => isMulti;
+  List<Quote> get getQuotes => quotes;
+  // List get getSelected => selected;
 }
