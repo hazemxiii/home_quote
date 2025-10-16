@@ -251,11 +251,9 @@ class QuotesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addQuote(String quote) async {
+  void addQuote(Quote quote) async {
     /// adds quote to the data
-    String key = DateTime.now().toString();
-    quotes.add(
-        Quote(id: key, quote: quote, selected: false, author: "", tags: []));
+    quotes.add(quote);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("myQuotes", jsonEncode(quotes));
     notifyListeners();
@@ -274,10 +272,10 @@ class QuotesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void editQuote(Quote q, String newVal) async {
+  void editQuote(Quote q, Quote newQuote) async {
     /// Edit a quote
 
-    q.quote = newVal;
+    q.updateWith(newQuote);
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("quotes", jsonEncode(quotes));

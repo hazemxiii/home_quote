@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_quote/global.dart';
+import 'package:home_quote/input_dialog.dart';
 import 'package:home_quote/models/quote.dart';
 import 'package:provider/provider.dart';
 
@@ -13,61 +14,33 @@ class QuoteWidget extends StatefulWidget {
 }
 
 class _QuoteWidgetState extends State<QuoteWidget> {
-  late TextEditingController editController;
-  @override
-  void initState() {
-    editController = TextEditingController(text: widget.quote.quote);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    editController.dispose();
-    super.dispose();
+  Future<bool?> _confirmDelete() async {
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            content: Text("Delete \"${widget.quote.quote}\"",
+                style: const TextStyle(color: Colors.black)),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: const Text("Delete",
+                      style: TextStyle(color: Colors.black)))
+            ],
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
-      TextStyle btnStyle = TextStyle(color: clrs.getTextC);
-      InputBorder border =
-          UnderlineInputBorder(borderSide: BorderSide(color: clrs.getTextC));
       return InkWell(
         onTap: () {
           Provider.of<QuotesNotifier>(context, listen: false)
               .selectQuote(widget.quote);
-        },
-        onLongPress: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  backgroundColor: clrs.getColorC,
-                  content: TextField(
-                      cursorColor: clrs.getTextC,
-                      controller: editController,
-                      style: TextStyle(color: clrs.getTextC),
-                      decoration: InputDecoration(
-                          focusedBorder: border, border: border)),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("cancel", style: btnStyle)),
-                    TextButton(
-                        onPressed: () {
-                          Provider.of<QuotesNotifier>(context, listen: false)
-                              .editQuote(widget.quote, editController.text);
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          "save",
-                          style: btnStyle,
-                        ))
-                  ],
-                );
-              });
         },
         child: Dismissible(
           confirmDismiss: (direction) async {
@@ -155,6 +128,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                       children: widget.quote.tags.map(_tagWidget).toList(),
                     ),
                   ),
+                  _options(),
                 ],
               )),
         ),
@@ -171,6 +145,61 @@ class _QuoteWidgetState extends State<QuoteWidget> {
         color: Colors.black,
       ),
       child: Text(tag, style: const TextStyle(color: Colors.white)),
+    );
+  }
+
+  Widget _options() {
+    return Wrap(
+      children: [
+        IconButton(
+            onPressed: () async {
+              final Quote? q = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return InputDialogWidget(quote: widget.quote);
+                  });
+              if (q != null && mounted) {
+                Provider.of<QuotesNotifier>(context, listen: false)
+                    .editQuote(widget.quote, q);
+              }
+            },
+            icon: const Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 5,
+              children: [
+                Icon(
+                  Icons.edit_outlined,
+                  color: Colors.black,
+                ),
+                Text(
+                  "Edit",
+                  style: TextStyle(color: Colors.black),
+                )
+              ],
+            )),
+        IconButton(
+            onPressed: () async {
+              bool? confirm = await _confirmDelete();
+              if (confirm == true && mounted) {
+                Provider.of<QuotesNotifier>(context, listen: false)
+                    .deleteQuote(widget.quote);
+              }
+            },
+            icon: const Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 5,
+              children: [
+                Icon(
+                  Icons.delete_outline,
+                  color: Colors.redAccent,
+                ),
+                Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.black),
+                )
+              ],
+            ))
+      ],
     );
   }
 }

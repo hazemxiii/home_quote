@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:home_quote/global.dart';
 import 'package:home_quote/input_dialog.dart';
+import 'package:home_quote/models/quote.dart';
 import 'package:home_quote/quote_widget.dart';
 import 'package:home_quote/settings.dart';
 import 'package:provider/provider.dart';
@@ -26,12 +27,16 @@ class _QuotesPageState extends State<QuotesPage> {
               backgroundColor: clrs.getColorC,
               foregroundColor: clrs.getTextC,
               child: const Icon(Icons.add),
-              onPressed: () {
-                showDialog(
+              onPressed: () async {
+                final Quote? quote = await showDialog(
                     context: context,
                     builder: (context) {
                       return const InputDialogWidget();
                     });
+                if (quote != null && context.mounted) {
+                  Provider.of<QuotesNotifier>(context, listen: false)
+                      .addQuote(quote);
+                }
               }),
           backgroundColor: c,
           appBar: AppBar(
@@ -89,7 +94,7 @@ class _QuotesPageState extends State<QuotesPage> {
                               const SliverGridDelegateWithMaxCrossAxisExtent(
                                   crossAxisSpacing: 15,
                                   mainAxisSpacing: 15,
-                                  mainAxisExtent: 250,
+                                  mainAxisExtent: 300,
                                   maxCrossAxisExtent: 300),
                           itemBuilder: (context, index) {
                             final quote =
