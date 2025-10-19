@@ -170,6 +170,8 @@ class QuotesNotifier extends ChangeNotifier {
       quotes.add(quote);
     }
 
+    // TODO by id & author
+
     // if (!prefs.containsKey("quotes")) {
     //   prefs.setString("quotes", "{}");
     // }

@@ -14,13 +14,19 @@ class Quote {
   });
 
   factory Quote.fromJson(Map<String, dynamic> json) {
-    return Quote(
+    // TODO remove by id & author
+    final author = json['author'];
+    final tags = List<String>.from(json['tags']);
+    _byAuthor[author] ??= [];
+    final quote = Quote(
       quote: json['quote'],
-      author: json['author'],
+      author: author,
       id: json['id'],
       selected: json['selected'],
-      tags: List<String>.from(json['tags']),
+      tags: tags,
     );
+    _byAuthor[author]!.add(quote);
+    return quote;
   }
 
   Map<String, dynamic> toJson() {
@@ -31,6 +37,17 @@ class Quote {
       'selected': selected,
       'tags': tags,
     };
+  }
+
+  static final Map<String, List<Quote>> _byAuthor = {};
+  static final Map<String, List<Quote>> _byTag = {};
+
+  static List<Quote> getQuotesByAuthor(String author) {
+    return _byAuthor[author] ?? [];
+  }
+
+  static List<Quote> getQuotesByTag(String tag) {
+    return _byTag[tag] ?? [];
   }
 
   void updateWith(Quote quote) {

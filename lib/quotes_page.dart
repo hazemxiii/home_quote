@@ -73,7 +73,20 @@ class _QuotesPageState extends State<QuotesPage> {
                     child: Consumer<QuotesNotifier>(
                       builder: (context, qNotifier, child) {
                         if (qNotifier.getVisible == null) {
-                          return const Text("No Quotes");
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 50),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.shuffle, color: Colors.black),
+                                Text("No Quote Selected",
+                                    style: TextStyle(color: Colors.black))
+                              ],
+                            ),
+                          );
                         }
                         return IgnorePointer(
                           ignoring: true,
