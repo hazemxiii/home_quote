@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:home_quote/global.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
@@ -32,7 +33,7 @@ class _QuotesPageState extends State<QuotesPage> {
       timer!.cancel();
     }
     timer = Timer(const Duration(milliseconds: 500), () {
-      print(searchController.text);
+      setState(() {});
     });
   }
 
@@ -141,6 +142,14 @@ class _QuotesPageState extends State<QuotesPage> {
                           itemBuilder: (context, index) {
                             final quote =
                                 context.read<QuotesNotifier>().getQuotes[index];
+                            if (searchController.text.isEmpty) {
+                              return QuoteWidget(quote: quote);
+                            }
+                            final r = ratio(quote.quote, searchController.text);
+                            // TODO: tags filter
+                            if (r < 25) {
+                              return const SizedBox.shrink();
+                            }
                             return QuoteWidget(quote: quote);
                           })),
                   const SizedBox(
