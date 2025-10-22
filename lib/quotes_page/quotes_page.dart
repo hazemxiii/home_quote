@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:home_quote/global.dart';
-import 'package:home_quote/input_dialog.dart';
+import 'package:home_quote/quotes_page/filter_btn.dart';
+import 'package:home_quote/quotes_page/input_dialog.dart';
 import 'package:home_quote/models/quote.dart';
-import 'package:home_quote/quote_widget.dart';
+import 'package:home_quote/quotes_page/quote_widget.dart';
+import 'package:home_quote/quotes_notifier.dart';
+import 'package:home_quote/quotes_page/search_widget.dart';
 import 'package:home_quote/settings.dart';
 import 'package:provider/provider.dart';
 
@@ -14,9 +19,21 @@ class QuotesPage extends StatefulWidget {
 }
 
 class _QuotesPageState extends State<QuotesPage> {
+  Timer? timer;
+  final searchController = TextEditingController();
   @override
   void initState() {
     super.initState();
+    searchController.addListener(onSearchQueryChange);
+  }
+
+  void onSearchQueryChange() {
+    if (timer != null) {
+      timer!.cancel();
+    }
+    timer = Timer(const Duration(milliseconds: 500), () {
+      print(searchController.text);
+    });
   }
 
   @override
@@ -97,6 +114,18 @@ class _QuotesPageState extends State<QuotesPage> {
                         );
                       },
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SearchWidget(controller: searchController),
+                      ),
+                      const SizedBox(width: 10),
+                      const FilterBtn(text: "Author"),
+                      const SizedBox(width: 5),
+                      const FilterBtn(text: "Tags"),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   Expanded(

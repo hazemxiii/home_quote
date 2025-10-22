@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 import "dart:typed_data";
 // import 'package:path_provider/path_provider.dart';
+import "package:home_quote/quotes_notifier.dart";
 import "package:home_quote/settings/color_palette.dart";
 import "package:home_quote/settings/color_picker.dart";
 import "package:flutter/material.dart";
