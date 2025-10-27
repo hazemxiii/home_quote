@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:home_quote/quotes_notifier.dart';
 
 class SearchWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -17,6 +19,15 @@ class SearchWidget extends StatelessWidget {
           Icons.search,
           color: c,
         ),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                icon: Icon(Icons.clear, color: c),
+                onPressed: () {
+                  controller.clear();
+                  context.read<QuotesNotifier>().setSearch("");
+                },
+              ),
         enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: c),
             borderRadius: BorderRadius.circular(10)),

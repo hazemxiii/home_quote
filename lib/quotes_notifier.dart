@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:home_quote/models/quote.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,13 +13,63 @@ class QuotesNotifier extends ChangeNotifier {
   final Map<String, List<Quote>> _byAuthor = {};
   final Map<String, List<Quote>> _byTag = {};
   Quote? visible;
+  String _search = "";
+  final _selectedTag = <String>[];
+  final _selectedAuthor = <String>[];
 
   QuotesNotifier() {
     loadData();
   }
 
+  List<String> get selectedAuthor => _selectedAuthor;
+  List<String> get selectedTag => _selectedTag;
+
+  List<Quote> get filtered {
+    return quotes.where((quote) => !isFilteredOut(quote)).toList();
+  }
+
+  bool isFilteredOut(Quote quote) {
+    if (_search.isNotEmpty) {
+      final r = ratio(quote.quote, _search);
+      if (r < 25) {
+        return true;
+      }
+    }
+    if (!_findAnyInAList(selectedTag, quote.tags)) {
+      return true;
+    }
+    if (quote.author != null &&
+        !_findAnyInAList(selectedAuthor, [quote.author ?? ''])) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _findAnyInAList(List<String> list, List<String> search) {
+    if (list.isEmpty) {
+      return true;
+    }
+    for (final e in list) {
+      if (search.contains(e)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void setSelectedAuthor(List<String> author) {
+    _selectedAuthor.clear();
+    _selectedAuthor.addAll(author);
+    notifyListeners();
+  }
+
+  void setSelectedTag(List<String> tag) {
+    _selectedTag.clear();
+    _selectedTag.addAll(tag);
+    notifyListeners();
+  }
+
   Future<bool> loadData() async {
-    /// loads the quotes with all relevant data
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (!prefs.containsKey('myQuotes')) {
@@ -52,13 +103,9 @@ class QuotesNotifier extends ChangeNotifier {
     prefs.setString("myQuotes", jsonEncode(quotes));
   }
 
-  List<Quote> getQuotesByAuthor(String author) {
-    return _byAuthor[author] ?? [];
-  }
+  List<String> get authors => _byAuthor.keys.toList();
 
-  List<Quote> getQuotesByTag(String tag) {
-    return _byTag[tag] ?? [];
-  }
+  List<String> get tags => _byTag.keys.toList();
 
   void setDataFromFile(File f) async {
     List data = (await f.readAsString()).split("\n");
@@ -87,14 +134,12 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void addQuote(Quote quote) async {
-    /// adds quote to the data
     quotes.add(quote);
     saveData();
     notifyListeners();
   }
 
   void deleteQuote(Quote q) async {
-    /// deletes a quote
     quotes.remove(q);
     saveData();
 
@@ -108,8 +153,6 @@ class QuotesNotifier extends ChangeNotifier {
   void editQuote(Quote q, Quote newQuote) async {
     q.updateWith(newQuote);
     saveData();
-
-    // if the quote is the visible one, change the visible
     if (visible == q) {
       changeVisible();
     }
@@ -117,23 +160,7 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void selectQuote(Quote q) async {
-    /// selects or deselects a quote
     q.selected = !q.selected;
-
-    // if (selected.contains(id)) {
-    //   selected.remove(id);
-    //   changeVisible();
-    // } else {
-    //   // if it's signle selection mode, make it the only quote in selected, else add it
-    //   if (isMulti) {
-    //     selected.add(id);
-    //   } else {
-    //     selected = [id];
-    //     changeVisible();
-    //   }
-    // }
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // prefs.setStringList("selected", selected);
 
     if (q == visible) {
       changeVisible();
@@ -145,11 +172,7 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void changeVisible() async {
-    /// changes the current visible quote
-
-    // get a random quote from selection
     try {
-      // visible = quotes[selected[Random().nextInt(selected.length)]];
       final selected = quotes.where((q) => q.selected).toList();
       if (selected.isEmpty) {
         visible = null;
@@ -179,7 +202,6 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   void clearSelection() async {
-    /// removes all selected quotes
     for (final q in quotes) {
       q.selected = false;
     }
@@ -188,8 +210,30 @@ class QuotesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSearch(String s) {
+    _search = s;
+    notifyListeners();
+  }
+
+  void toggleAuthorSelect(String author) {
+    if (selectedAuthor.contains(author)) {
+      selectedAuthor.remove(author);
+    } else {
+      selectedAuthor.add(author);
+    }
+    notifyListeners();
+  }
+
+  void toggleTagSelect(String tag) {
+    if (selectedTag.contains(tag)) {
+      selectedTag.remove(tag);
+    } else {
+      selectedTag.add(tag);
+    }
+    notifyListeners();
+  }
+
   Quote? get getVisible => visible;
-  // bool get getIsMulti => isMulti;
   List<Quote> get getQuotes => quotes;
-  // List get getSelected => selected;
+  String get search => _search;
 }

@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:home_quote/global.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
+import 'package:home_quote/quotes_page/filter_dialog.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
 import 'package:home_quote/models/quote.dart';
 import 'package:home_quote/quotes_page/quote_widget.dart';
@@ -33,9 +32,12 @@ class _QuotesPageState extends State<QuotesPage> {
       timer!.cancel();
     }
     timer = Timer(const Duration(milliseconds: 500), () {
-      setState(() {});
+      context.read<QuotesNotifier>().setSearch(searchController.text);
     });
   }
+
+  QuotesNotifier get quotesNotX => context.read<QuotesNotifier>();
+  QuotesNotifier get quotesNot => context.watch<QuotesNotifier>();
 
   @override
   Widget build(BuildContext context) {
@@ -120,19 +122,64 @@ class _QuotesPageState extends State<QuotesPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: SearchWidget(controller: searchController),
+                        child: ChangeNotifierProvider.value(
+                            value: context.read<QuotesNotifier>(),
+                            child: SearchWidget(controller: searchController)),
                       ),
                       const SizedBox(width: 10),
-                      const FilterBtn(text: "Author"),
+                      FilterBtn(
+                        text: "Author",
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                final oldAuthor = quotesNotX.selectedAuthor;
+                                return Consumer<QuotesNotifier>(
+                                    builder: (context, quotesNot, child) {
+                                  return FilterDialog(
+                                      type: "Author",
+                                      items: quotesNot.authors,
+                                      selected: quotesNot.selectedAuthor,
+                                      onCancel: () {
+                                        quotesNot.setSelectedAuthor(oldAuthor);
+                                      },
+                                      onPressed: (v) {
+                                        quotesNot.toggleAuthorSelect(v);
+                                      });
+                                });
+                              });
+                        },
+                      ),
                       const SizedBox(width: 5),
-                      const FilterBtn(text: "Tags"),
+                      FilterBtn(
+                        text: "Tags",
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                final oldTag = quotesNotX.selectedTag;
+                                return Consumer<QuotesNotifier>(
+                                    builder: (context, quotesNot, child) {
+                                  return FilterDialog(
+                                      type: "Tags",
+                                      items: quotesNot.tags,
+                                      selected: quotesNot.selectedTag,
+                                      onCancel: () {
+                                        quotesNot.setSelectedTag(oldTag);
+                                      },
+                                      onPressed: (v) {
+                                        quotesNot.toggleTagSelect(v);
+                                      });
+                                });
+                              });
+                        },
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Expanded(
                       child: GridView.builder(
-                          itemCount:
-                              context.watch<QuotesNotifier>().getQuotes.length,
+                          itemCount: quotesNot.filtered.length,
                           gridDelegate:
                               const SliverGridDelegateWithMaxCrossAxisExtent(
                                   crossAxisSpacing: 15,
@@ -140,16 +187,7 @@ class _QuotesPageState extends State<QuotesPage> {
                                   mainAxisExtent: 300,
                                   maxCrossAxisExtent: 300),
                           itemBuilder: (context, index) {
-                            final quote =
-                                context.read<QuotesNotifier>().getQuotes[index];
-                            if (searchController.text.isEmpty) {
-                              return QuoteWidget(quote: quote);
-                            }
-                            final r = ratio(quote.quote, searchController.text);
-                            // TODO: tags filter
-                            if (r < 25) {
-                              return const SizedBox.shrink();
-                            }
+                            final quote = quotesNotX.filtered[index];
                             return QuoteWidget(quote: quote);
                           })),
                   const SizedBox(

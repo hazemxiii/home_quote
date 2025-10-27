@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class FilterBtn extends StatefulWidget {
   final String text;
-  const FilterBtn({super.key, required this.text});
+  final VoidCallback onPressed;
+  const FilterBtn({super.key, required this.text, required this.onPressed});
 
   @override
   State<FilterBtn> createState() => _FilterBtnState();
@@ -14,7 +15,7 @@ class _FilterBtnState extends State<FilterBtn> {
   Widget build(BuildContext context) {
     final textC = isHovered ? Colors.white : Colors.black;
     return InkWell(
-      onTap: () {},
+      onTap: widget.onPressed,
       onHover: (value) {
         setState(() {
           isHovered = value;
