@@ -23,14 +23,14 @@ class _ColorPickerState extends State<ColorPicker> {
               context: context,
               builder: (context) {
                 return AlertDialog(
-                  backgroundColor: clrs.getColorC,
+                  backgroundColor: clrs.c,
                   actions: [
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
                       child: Text("cancel",
-                          style: TextStyle(color: clrs.getTextC)),
+                          style: TextStyle(color: clrs.textColor)),
                     )
                   ],
                   content: widget.mode == PickerModes.main
@@ -43,7 +43,7 @@ class _ColorPickerState extends State<ColorPicker> {
                           },
                           colorCodeHasColor: true,
                           showColorCode: true,
-                          color: clrs.getTextC,
+                          color: clrs.textColor,
                           onColorChanged: (color) {
                             Provider.of<StyleNotifier>(context, listen: false)
                                 .setTextColor(color);
@@ -56,17 +56,35 @@ class _ColorPickerState extends State<ColorPicker> {
           padding: const EdgeInsets.all(10),
           margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
           decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              border: Border.all(color: clrs.getColorC!),
-              color: widget.mode == PickerModes.text
-                  ? clrs.getTextC
-                  : clrs.getColorC),
-          child: Center(
-            child: Text(widget.text,
-                style: TextStyle(
-                    color: widget.mode == PickerModes.text
-                        ? clrs.getColorC
-                        : clrs.getTextC)),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: Border.all(color: clrs.appColor),
+            // color: widget.mode == PickerModes.text
+            //     ? clrs.getTextC
+            //     : clrs.getColorC
+            color:
+                widget.mode == PickerModes.text ? Colors.white : clrs.appColor,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 10,
+            children: [
+              Text(widget.text,
+                  style: TextStyle(
+                      color: widget.mode == PickerModes.text
+                          ? clrs.appColor
+                          : Colors.white)),
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  border: Border.all(color: clrs.appColor),
+                  shape: BoxShape.circle,
+                  color: widget.mode == PickerModes.text
+                      ? clrs.textColor
+                      : clrs.color,
+                ),
+              )
+            ],
           ),
         ),
       );

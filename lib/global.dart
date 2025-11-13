@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:home_widget/home_widget.dart';
 
-final c = Color.lerp(Colors.black, Colors.white, 0.9);
-
 class StyleNotifier extends ChangeNotifier {
   Color textColor = const Color.fromRGBO(255, 255, 255, 1);
   Color color = const Color.fromRGBO(50, 50, 50, 1);
-  bool transparent = false;
+  Color appColor = Colors.pink;
+  bool _transparent = false;
+  Color get c => Color.lerp(appColor, Colors.white, 0.9)!;
 
   StyleNotifier() {
     loadStyle();
@@ -29,7 +29,7 @@ class StyleNotifier extends ChangeNotifier {
 
     textColor = parseColorFromHex(prefs.getString("textColor")!);
     color = parseColorFromHex(prefs.getString("color")!);
-    transparent = prefs.getBool("transparent")!;
+    _transparent = prefs.getBool("transparent")!;
 
     updateWidgetColors();
 
@@ -41,7 +41,7 @@ class StyleNotifier extends ChangeNotifier {
     try {
       if (!Platform.isWindows) {
         HomeWidget.saveWidgetData(
-            "color", !transparent ? "#${getHex(color)}" : "transparent");
+            "color", !_transparent ? "#${getHex(color)}" : "transparent");
         HomeWidget.saveWidgetData("textColor", "#${getHex(textColor)}");
         HomeWidget.updateWidget(
           qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
@@ -73,32 +73,14 @@ class StyleNotifier extends ChangeNotifier {
   void toggleTransparent() async {
     /// toggles transparent background
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    transparent = !transparent;
-    prefs.setBool("transparent", transparent);
+    _transparent = !_transparent;
+    prefs.setBool("transparent", _transparent);
     updateWidgetColors();
     notifyListeners();
   }
 
   String getHex(Color c) {
-    /// gets the hex code from the color without the "#"
-    // Map hexs = {10: "a", 11: "b", 12: "c", 13: "d", 14: "e", 15: "f"};
-
-    // int red0 = (c.red / 16).floor();
-    // int red1 = c.red - red0 * 16;
-    // int green0 = (c.green / 16).floor();
-    // int green1 = c.green - green0 * 16;
-    // int blue0 = (c.blue / 16).floor();
-    // int blue1 = c.blue - blue0 * 16;
-
-    // String red =
-    //     "${red0 > 9 ? hexs[red0] : red0}${red1 > 9 ? hexs[red1] : red1}";
-    // String green =
-    //     "${green0 > 9 ? hexs[green0] : green0}${green1 > 9 ? hexs[green1] : green1}";
-    // String blue =
-    //     "${blue0 > 9 ? hexs[blue0] : blue0}${blue1 > 9 ? hexs[blue1] : blue1}";
-
-    // return "$red$green$blue";
-    return '#${c.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+    return '#${c.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase().substring(2)}';
   }
 
   Color parseColorFromHex(String hex) {
@@ -136,7 +118,7 @@ class StyleNotifier extends ChangeNotifier {
     return left * 16 + right;
   }
 
-  Color get getTextC => textColor;
-  Color? get getColorC => color;
-  bool get isTransparent => transparent;
+  // Color get getTextC => textColor;
+  // Color? get getColorC => color;
+  bool get isTransparent => _transparent;
 }

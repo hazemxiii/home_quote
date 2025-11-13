@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../global.dart';
 
 class FilterBtn extends StatefulWidget {
   final String text;
@@ -13,7 +15,8 @@ class _FilterBtnState extends State<FilterBtn> {
   bool isHovered = false;
   @override
   Widget build(BuildContext context) {
-    final textC = isHovered ? Colors.white : Colors.black;
+    final textC =
+        isHovered ? Colors.white : context.watch<StyleNotifier>().appColor;
     return InkWell(
       onTap: widget.onPressed,
       onHover: (value) {
@@ -26,7 +29,9 @@ class _FilterBtnState extends State<FilterBtn> {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
-          color: isHovered ? Colors.black : Colors.white,
+          color: isHovered
+              ? context.watch<StyleNotifier>().appColor
+              : Colors.white,
         ),
         child: Row(
           spacing: 5,

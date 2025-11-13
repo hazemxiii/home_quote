@@ -24,10 +24,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Scaffold(
-          backgroundColor: clrs.getTextC,
+          backgroundColor: clrs.c,
           appBar: AppBar(
-            foregroundColor: clrs.getColorC,
-            backgroundColor: clrs.getTextC,
+            foregroundColor: clrs.appColor,
+            backgroundColor: clrs.c,
             title: const Text("Settings"),
             centerTitle: true,
           ),
@@ -38,21 +38,20 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 SwitchListTile(
                   value: clrs.isTransparent,
                   onChanged: (v) {
-                    Provider.of<StyleNotifier>(context, listen: false)
-                        .toggleTransparent();
+                    clrs.toggleTransparent();
                   },
                   title: Text(
                     "Transparent Background",
-                    style: TextStyle(color: clrs.getColorC),
+                    style: TextStyle(color: clrs.appColor),
                   ),
-                  tileColor: clrs.getTextC,
-                  activeThumbColor: clrs.getColorC,
-                  inactiveThumbColor:
-                      Color.lerp(clrs.getTextC, clrs.getColorC, .8),
-                  inactiveTrackColor:
-                      Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+                  tileColor: clrs.c,
+                  activeThumbColor: clrs.appColor,
+                  inactiveThumbColor: clrs.appColor,
+                  inactiveTrackColor: clrs.c,
                 ),
-                const ColorPicker(mode: PickerModes.main, text: "Widget Color"),
+                if (!clrs.isTransparent)
+                  const ColorPicker(
+                      mode: PickerModes.main, text: "Widget Color"),
                 const ColorPicker(mode: PickerModes.text, text: "Text Color"),
                 const SizedBox(
                   height: 10,
@@ -77,13 +76,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 50, vertical: 10),
                         decoration: BoxDecoration(
-                            color:
-                                Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+                            color: clrs.appColor.withValues(alpha: 0.2),
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(10))),
                         child: Icon(
                           Icons.upload,
-                          color: clrs.getColorC,
+                          color: clrs.appColor,
                         )),
                   );
                 }),
@@ -106,12 +104,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 10),
                     decoration: BoxDecoration(
-                        color: Color.lerp(clrs.getTextC, clrs.getColorC, .2),
+                        color: clrs.appColor.withValues(alpha: 0.2),
                         borderRadius:
                             const BorderRadius.all(Radius.circular(10))),
                     child: Icon(
                       Icons.download,
-                      color: clrs.getColorC,
+                      color: clrs.appColor,
                     ),
                   ),
                 )

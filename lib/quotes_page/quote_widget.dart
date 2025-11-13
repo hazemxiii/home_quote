@@ -22,14 +22,16 @@ class _QuoteWidgetState extends State<QuoteWidget> {
           return AlertDialog(
             backgroundColor: Colors.white,
             content: Text("Delete \"${widget.quote.quote}\"",
-                style: const TextStyle(color: Colors.black)),
+                style:
+                    TextStyle(color: context.watch<StyleNotifier>().appColor)),
             actions: [
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(true);
                   },
-                  child: const Text("Delete",
-                      style: TextStyle(color: Colors.black)))
+                  child: Text("Delete",
+                      style: TextStyle(
+                          color: context.watch<StyleNotifier>().appColor)))
             ],
           );
         });
@@ -51,7 +53,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: clrs.appColor.withValues(alpha: 0.1),
                   blurRadius: 2,
                   spreadRadius: 1,
                   offset: const Offset(1, 3),
@@ -70,7 +72,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                           Checkbox(
                               shape: const CircleBorder(),
                               checkColor: Colors.white,
-                              activeColor: Colors.black,
+                              activeColor: clrs.appColor,
                               value: widget.quote.selected,
                               onChanged: (v) {
                                 context
@@ -78,17 +80,14 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                                     .selectQuote(widget.quote);
                               })
                         ]
-                      : [
-                          const Icon(Icons.shuffle_outlined,
-                              color: Colors.black)
-                        ],
+                      : [Icon(Icons.shuffle_outlined, color: clrs.appColor)],
                 ),
                 Text(
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   '"${widget.quote.quote}"',
-                  style: const TextStyle(
-                      color: Colors.black,
+                  style: TextStyle(
+                      color: clrs.appColor,
                       fontSize: 16,
                       fontStyle: FontStyle.italic),
                 ),
@@ -123,9 +122,9 @@ class _QuoteWidgetState extends State<QuoteWidget> {
     return Container(
       margin: const EdgeInsets.all(2),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(999)),
-        color: Colors.black,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(999)),
+        color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
       ),
       child: Text(tag, style: const TextStyle(color: Colors.white)),
     );
@@ -146,17 +145,18 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                     .editQuote(widget.quote, q);
               }
             },
-            icon: const Row(
+            icon: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 5,
               children: [
                 Icon(
                   Icons.edit_outlined,
-                  color: Colors.black,
+                  color: context.watch<StyleNotifier>().appColor,
                 ),
                 Text(
                   "Edit",
-                  style: TextStyle(color: Colors.black),
+                  style:
+                      TextStyle(color: context.watch<StyleNotifier>().appColor),
                 )
               ],
             )),
@@ -168,17 +168,18 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                     .deleteQuote(widget.quote);
               }
             },
-            icon: const Row(
+            icon: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 5,
               children: [
-                Icon(
+                const Icon(
                   Icons.delete_outline,
                   color: Colors.redAccent,
                 ),
                 Text(
                   "Delete",
-                  style: TextStyle(color: Colors.black),
+                  style:
+                      TextStyle(color: context.watch<StyleNotifier>().appColor),
                 )
               ],
             ))

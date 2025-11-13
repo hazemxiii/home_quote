@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:home_quote/global.dart';
 import 'package:provider/provider.dart';
-import 'package:home_quote/quotes_notifier.dart';
 
 class SearchWidget extends StatelessWidget {
   final TextEditingController controller;
-  const SearchWidget({super.key, required this.controller});
+  final VoidCallback onClear;
+  final String hint;
+  const SearchWidget(
+      {super.key,
+      required this.controller,
+      required this.onClear,
+      required this.hint});
 
   @override
   Widget build(BuildContext context) {
-    final c = Colors.black.withValues(alpha: 0.4);
+    final c = context.watch<StyleNotifier>().appColor.withValues(alpha: 0.4);
     return TextField(
-      cursorColor: Colors.black,
+      cursorColor: context.watch<StyleNotifier>().appColor,
       controller: controller,
-      style: const TextStyle(color: Colors.black),
+      style: TextStyle(color: context.watch<StyleNotifier>().appColor),
       decoration: InputDecoration(
         hintStyle: TextStyle(color: c),
         prefixIcon: Icon(
@@ -25,16 +31,17 @@ class SearchWidget extends StatelessWidget {
                 icon: Icon(Icons.clear, color: c),
                 onPressed: () {
                   controller.clear();
-                  context.read<QuotesNotifier>().setSearch("");
+                  onClear();
                 },
               ),
         enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: c),
             borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black, width: 2),
+            borderSide: BorderSide(
+                color: context.watch<StyleNotifier>().appColor, width: 2),
             borderRadius: BorderRadius.circular(10)),
-        hintText: "Search by quote",
+        hintText: hint,
       ),
     );
   }

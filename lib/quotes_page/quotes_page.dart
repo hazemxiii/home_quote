@@ -44,8 +44,8 @@ class _QuotesPageState extends State<QuotesPage> {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Scaffold(
           floatingActionButton: FloatingActionButton(
-              backgroundColor: clrs.getColorC,
-              foregroundColor: clrs.getTextC,
+              backgroundColor: clrs.appColor,
+              foregroundColor: Colors.white,
               child: const Icon(Icons.add),
               onPressed: () async {
                 final Quote? quote = await showDialog(
@@ -58,11 +58,11 @@ class _QuotesPageState extends State<QuotesPage> {
                       .addQuote(quote);
                 }
               }),
-          backgroundColor: c,
+          backgroundColor: clrs.c,
           appBar: AppBar(
             title: const Text("My Quotes"),
-            backgroundColor: c,
-            foregroundColor: Colors.black,
+            backgroundColor: clrs.c,
+            foregroundColor: clrs.appColor,
             actions: [
               IconButton(
                 onPressed: () {
@@ -99,11 +99,11 @@ class _QuotesPageState extends State<QuotesPage> {
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 color: Colors.white),
-                            child: const Column(
+                            child: Column(
                               children: [
-                                Icon(Icons.shuffle, color: Colors.black),
+                                Icon(Icons.shuffle, color: clrs.appColor),
                                 Text("No Quote Selected",
-                                    style: TextStyle(color: Colors.black))
+                                    style: TextStyle(color: clrs.appColor))
                               ],
                             ),
                           );
@@ -124,7 +124,12 @@ class _QuotesPageState extends State<QuotesPage> {
                       Expanded(
                         child: ChangeNotifierProvider.value(
                             value: context.read<QuotesNotifier>(),
-                            child: SearchWidget(controller: searchController)),
+                            child: SearchWidget(
+                                controller: searchController,
+                                onClear: () {
+                                  quotesNotX.setSearch("");
+                                },
+                                hint: "Search by quote")),
                       ),
                       const SizedBox(width: 10),
                       FilterBtn(

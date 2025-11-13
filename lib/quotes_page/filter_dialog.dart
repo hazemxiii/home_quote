@@ -1,4 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+import 'package:home_quote/global.dart';
+import 'package:home_quote/quotes_page/search_widget.dart';
+import 'package:provider/provider.dart';
 
 class FilterDialog extends StatefulWidget {
   final String type;
@@ -19,6 +25,25 @@ class FilterDialog extends StatefulWidget {
 }
 
 class _FilterDialogState extends State<FilterDialog> {
+  final TextEditingController controller = TextEditingController();
+  Timer? timer;
+  @override
+  void initState() {
+    super.initState();
+    controller.addListener(onSearchQueryChange);
+  }
+
+  void onSearchQueryChange() {
+    if (timer != null) {
+      timer!.cancel();
+    }
+    timer = Timer(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -29,31 +54,52 @@ class _FilterDialogState extends State<FilterDialog> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Filter"),
+          Text("Filter",
+              style: TextStyle(
+                  color: context.watch<StyleNotifier>().appColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
           Text("Filter by ${widget.type}",
-              style: const TextStyle(color: Colors.black, fontSize: 16)),
+              style: TextStyle(
+                  color: context.watch<StyleNotifier>().appColor,
+                  fontSize: 16)),
         ],
       ),
-      content: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.start,
-        spacing: 5,
-        runSpacing: 5,
-        children: widget.items.map((e) {
-          return InkWell(
-            onTap: () {
-              widget.onPressed(e);
-            },
-            child: Chip(
-              backgroundColor:
-                  widget.selected.contains(e) ? Colors.black : Colors.white,
-              label: Text(e,
-                  style: TextStyle(
-                      color: widget.selected.contains(e)
-                          ? Colors.white
-                          : Colors.black)),
-            ),
-          );
-        }).toList(),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        spacing: 10,
+        children: [
+          SearchWidget(
+              controller: controller,
+              onClear: () {},
+              hint: "Search ${widget.type}"),
+          Wrap(
+            spacing: 5,
+            runSpacing: 5,
+            children: widget.items.map((e) {
+              if (controller.text.isNotEmpty &&
+                  ratio(controller.text, e) < 25) {
+                return const SizedBox.shrink();
+              }
+              return InkWell(
+                onTap: () {
+                  widget.onPressed(e);
+                },
+                child: Chip(
+                  backgroundColor: widget.selected.contains(e)
+                      ? context.watch<StyleNotifier>().appColor
+                      : Colors.white,
+                  label: Text(e,
+                      style: TextStyle(
+                          color: widget.selected.contains(e)
+                              ? Colors.white
+                              : context.watch<StyleNotifier>().appColor)),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
       actions: [
         TextButton(
@@ -61,7 +107,8 @@ class _FilterDialogState extends State<FilterDialog> {
             widget.onCancel();
             Navigator.of(context).pop();
           },
-          child: const Text("Cancel", style: TextStyle(color: Colors.black)),
+          child: Text("Cancel",
+              style: TextStyle(color: context.watch<StyleNotifier>().appColor)),
         ),
       ],
     );

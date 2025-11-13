@@ -48,9 +48,9 @@ class _ColorPaletteState extends State<ColorPalette> {
             return Consumer<StyleNotifier>(builder: (context, clrs, child) {
               Color? active;
               if (widget.mode == PickerModes.text) {
-                active = clrs.getTextC;
+                active = clrs.textColor;
               } else {
-                active = clrs.getColorC;
+                active = clrs.textColor;
               }
               return InkWell(
                 onTap: () {
@@ -67,12 +67,12 @@ class _ColorPaletteState extends State<ColorPalette> {
                   decoration: BoxDecoration(
                       borderRadius:
                           const BorderRadius.all(Radius.circular(999)),
-                      border: Border.all(color: clrs.getTextC),
+                      border: Border.all(color: clrs.textColor),
                       color: color),
                   child: active == color
                       ? Icon(
                           Icons.check,
-                          color: Color.lerp(Colors.black, color, 0.5),
+                          color: Color.lerp(clrs.appColor, color, 0.5),
                         )
                       : null,
                 ),

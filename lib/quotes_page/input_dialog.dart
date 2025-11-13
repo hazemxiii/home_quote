@@ -41,7 +41,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
-      TextStyle btnStyle = const TextStyle(color: Colors.black);
+      TextStyle btnStyle = TextStyle(color: clrs.appColor);
 
       return AlertDialog(
         title: Text("${widget.quote == null ? "Add" : "Edit"} Quote"),
@@ -70,7 +70,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
                           _tagCont.clear();
                         });
                       },
-                      icon: const Icon(Icons.add, color: Colors.black))),
+                      icon: Icon(Icons.add, color: clrs.appColor))),
               Wrap(
                 spacing: 3,
                 runSpacing: 3,
@@ -107,7 +107,8 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(900),
         ),
-        backgroundColor: Colors.black.withValues(alpha: 0.2),
+        backgroundColor:
+            context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
         onDeleted: () {
           setState(() {
             quote.tags.remove(tag);
@@ -119,14 +120,16 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   Widget _input(
       String title, String hint, TextEditingController controller, int? lines,
       {Widget? suffix}) {
+    final c = context.watch<StyleNotifier>().appColor;
     return Column(
       spacing: 5,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style:
-              const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: context.watch<StyleNotifier>().appColor,
+              fontWeight: FontWeight.bold),
         ),
         Row(
           children: [
@@ -134,22 +137,20 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
               child: TextField(
                 minLines: lines,
                 maxLines: lines != null ? null : 1,
-                cursorColor: Colors.black,
+                cursorColor: c,
                 controller: controller,
-                style: const TextStyle(color: Colors.black),
+                style: TextStyle(color: c),
                 decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      borderSide: BorderSide(
-                          color: Colors.black.withValues(alpha: 0.3)),
+                      borderSide: BorderSide(color: c.withValues(alpha: 0.3)),
                     ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      borderSide: BorderSide(color: Colors.black, width: 2),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      borderSide: BorderSide(color: c, width: 2),
                     ),
                     hintText: hint,
-                    hintStyle:
-                        TextStyle(color: Colors.black.withValues(alpha: 0.5))),
+                    hintStyle: TextStyle(color: c.withValues(alpha: 0.5))),
               ),
             ),
             if (suffix != null) suffix

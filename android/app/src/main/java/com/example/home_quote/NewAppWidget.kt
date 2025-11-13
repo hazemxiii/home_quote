@@ -49,6 +49,7 @@ internal fun updateAppWidget(
 
     val color = widgetData.getString("color","#000000")
     val textColor = Color.parseColor(widgetData.getString("textColor", "#ffffff"))
+    //val textColor = Color.parseColor("#ffffff")
     if(color == "#000000"){
         this.setInt(R.id.visible,"setBackgroundResource",R.drawable.back_000000)
     }else if(color == "#ffffff"){
