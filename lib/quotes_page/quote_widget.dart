@@ -126,7 +126,8 @@ class _QuoteWidgetState extends State<QuoteWidget> {
         borderRadius: const BorderRadius.all(Radius.circular(999)),
         color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
       ),
-      child: Text(tag, style: const TextStyle(color: Colors.white)),
+      child: Text(tag,
+          style: TextStyle(color: context.watch<StyleNotifier>().appColor)),
     );
   }
 

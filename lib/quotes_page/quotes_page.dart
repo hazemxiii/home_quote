@@ -138,12 +138,21 @@ class _QuotesPageState extends State<QuotesPage> {
                           showDialog(
                               context: context,
                               builder: (context) {
-                                final oldAuthor = quotesNotX.selectedAuthor;
+                                final oldAuthor = [
+                                  ...quotesNotX.selectedAuthor
+                                ];
                                 return Consumer<QuotesNotifier>(
                                     builder: (context, quotesNot, child) {
+                                  final authors = <String>[...oldAuthor];
+                                  for (final quote in quotesNot.quotes) {
+                                    if (quote.author != null) {
+                                      authors.add(quote.author!);
+                                    }
+                                  }
+                                  authors.toSet().toList();
                                   return FilterDialog(
                                       type: "Author",
-                                      items: quotesNot.authors,
+                                      items: authors,
                                       selected: quotesNot.selectedAuthor,
                                       onCancel: () {
                                         quotesNot.setSelectedAuthor(oldAuthor);
@@ -162,12 +171,17 @@ class _QuotesPageState extends State<QuotesPage> {
                           showDialog(
                               context: context,
                               builder: (context) {
-                                final oldTag = quotesNotX.selectedTag;
+                                final oldTag = [...quotesNotX.selectedTag];
                                 return Consumer<QuotesNotifier>(
                                     builder: (context, quotesNot, child) {
+                                  final tags = <String>[...oldTag];
+                                  for (final quote in quotesNot.quotes) {
+                                    tags.addAll(quote.tags);
+                                  }
+                                  tags.toSet().toList();
                                   return FilterDialog(
                                       type: "Tags",
-                                      items: quotesNot.tags,
+                                      items: tags,
                                       selected: quotesNot.selectedTag,
                                       onCancel: () {
                                         quotesNot.setSelectedTag(oldTag);

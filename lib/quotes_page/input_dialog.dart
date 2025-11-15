@@ -44,7 +44,8 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
       TextStyle btnStyle = TextStyle(color: clrs.appColor);
 
       return AlertDialog(
-        title: Text("${widget.quote == null ? "Add" : "Edit"} Quote"),
+        title: Text("${widget.quote == null ? "Add" : "Edit"} Quote",
+            style: TextStyle(color: clrs.appColor)),
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -103,18 +104,30 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   }
 
   Widget _tagWidget(String tag) {
-    return Chip(
-        shape: RoundedRectangleBorder(
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(900),
+          color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
         ),
-        backgroundColor:
-            context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
-        onDeleted: () {
-          setState(() {
-            quote.tags.remove(tag);
-          });
-        },
-        label: Text(tag));
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              tag,
+              style: TextStyle(color: context.watch<StyleNotifier>().appColor),
+            ),
+            IconButton(
+                padding: const EdgeInsets.all(0),
+                onPressed: () {
+                  setState(() {
+                    quote.tags.remove(tag);
+                  });
+                },
+                icon: Icon(Icons.close,
+                    color: context.watch<StyleNotifier>().appColor)),
+          ],
+        ));
   }
 
   Widget _input(

@@ -85,11 +85,7 @@ class StyleNotifier extends ChangeNotifier {
 
   Color parseColorFromHex(String hex) {
     /// gets the color from the hex code
-    int r = colorFromChannel(hex.substring(0, 2));
-    int g = colorFromChannel(hex.substring(2, 4));
-    int b = colorFromChannel(hex.substring(4, 6));
-
-    return Color.fromRGBO(r, g, b, 1);
+    return Color(int.parse(hex.substring(1), radix: 16) + 0xFF000000);
   }
 
   int colorFromChannel(String channel) {

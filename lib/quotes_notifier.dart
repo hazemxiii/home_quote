@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class QuotesNotifier extends ChangeNotifier {
   List<Quote> quotes = [];
-  final Map<String, List<Quote>> _byAuthor = {};
+  // final Map<String, List<Quote>> _byAuthor = {};
   final Map<String, List<Quote>> _byTag = {};
   Quote? visible;
   String _search = "";
@@ -78,12 +78,12 @@ class QuotesNotifier extends ChangeNotifier {
     final q = jsonDecode(prefs.getString("myQuotes")!);
     for (final e in q) {
       final quote = Quote.fromJson(Map<String, dynamic>.from(e));
-      final author = quote.author;
+      // final author = quote.author;
       final tags = quote.tags;
-      if (author != null) {
-        _byAuthor[author] ??= [];
-        _byAuthor[author]!.add(quote);
-      }
+      // if (author != null) {
+      //   _byAuthor[author] ??= [];
+      //   _byAuthor[author]!.add(quote);
+      // }
       for (final tag in tags) {
         _byTag[tag] ??= [];
         _byTag[tag]!.add(quote);
@@ -103,7 +103,7 @@ class QuotesNotifier extends ChangeNotifier {
     prefs.setString("myQuotes", jsonEncode(quotes));
   }
 
-  List<String> get authors => _byAuthor.keys.toList();
+  // List<String> get authors => _byAuthor.keys.toList();
 
   List<String> get tags => _byTag.keys.toList();
 
