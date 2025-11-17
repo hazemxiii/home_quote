@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class QuotesNotifier extends ChangeNotifier {
   List<Quote> quotes = [];
   // final Map<String, List<Quote>> _byAuthor = {};
-  final Map<String, List<Quote>> _byTag = {};
+  // final Map<String, List<Quote>> _byTag = {};
   Quote? visible;
   String _search = "";
   final _selectedTag = <String>[];
@@ -70,6 +70,7 @@ class QuotesNotifier extends ChangeNotifier {
   }
 
   Future<bool> loadData() async {
+    final migrated = await migrateQuotes();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (!prefs.containsKey('myQuotes')) {
@@ -79,22 +80,46 @@ class QuotesNotifier extends ChangeNotifier {
     for (final e in q) {
       final quote = Quote.fromJson(Map<String, dynamic>.from(e));
       // final author = quote.author;
-      final tags = quote.tags;
+      // final tags = quote.tags;
       // if (author != null) {
       //   _byAuthor[author] ??= [];
       //   _byAuthor[author]!.add(quote);
       // }
-      for (final tag in tags) {
-        _byTag[tag] ??= [];
-        _byTag[tag]!.add(quote);
-      }
+      // for (final tag in tags) {
+      //   _byTag[tag] ??= [];
+      //   _byTag[tag]!.add(quote);
+      // }
       if (quote.quote == prefs.getString("visible")) {
         visible = quote;
       }
       quotes.add(quote);
     }
+    if (migrated) {
+      saveData();
+    }
     notifyListeners();
 
+    return true;
+  }
+
+  Future<bool> migrateQuotes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool migrated = prefs.getBool('migrated') ?? false;
+    if (migrated) {
+      return false;
+    }
+    Map oldQuotes = jsonDecode(prefs.getString('quotes') ?? "{}");
+    for (final e in oldQuotes.entries) {
+      Quote quote = Quote(
+        id: e.key,
+        quote: e.value,
+        author: null,
+        tags: [],
+        selected: false,
+      );
+      quotes.add(quote);
+    }
+    prefs.setBool('migrated', true);
     return true;
   }
 
@@ -105,7 +130,7 @@ class QuotesNotifier extends ChangeNotifier {
 
   // List<String> get authors => _byAuthor.keys.toList();
 
-  List<String> get tags => _byTag.keys.toList();
+  // List<String> get tags => _byTag.keys.toList();
 
   void setDataFromFile(File f) async {
     List data = (await f.readAsString()).split("\n");

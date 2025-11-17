@@ -40,9 +40,9 @@ class StyleNotifier extends ChangeNotifier {
     /// updates the colors of the home widget
     try {
       if (!Platform.isWindows) {
-        HomeWidget.saveWidgetData(
-            "color", !_transparent ? "#${getHex(color)}" : "transparent");
-        HomeWidget.saveWidgetData("textColor", "#${getHex(textColor)}");
+        HomeWidget.saveWidgetData("color",
+            !_transparent ? getHex(color).toLowerCase() : "transparent");
+        HomeWidget.saveWidgetData("textColor", getHex(textColor));
         HomeWidget.updateWidget(
           qualifiedAndroidName: 'com.example.home_quote.NewAppWidget',
         );
