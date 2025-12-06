@@ -15,6 +15,9 @@ class QuoteWidget extends StatefulWidget {
 }
 
 class _QuoteWidgetState extends State<QuoteWidget> {
+  QuotesNotifier get quotesNot => context.watch<QuotesNotifier>();
+  QuotesNotifier get quotesNotX => context.read<QuotesNotifier>();
+
   Future<bool?> _confirmDelete() async {
     return await showDialog(
         context: context,
@@ -44,8 +47,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
         clipBehavior: Clip.hardEdge,
         child: InkWell(
           onTap: () {
-            Provider.of<QuotesNotifier>(context, listen: false)
-                .selectQuote(widget.quote);
+            quotesNotX.selectQuote(widget.quote);
           },
           child: Container(
               width: double.infinity,
@@ -53,6 +55,14 @@ class _QuoteWidgetState extends State<QuoteWidget> {
               // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
+                // gradient: quotesNot.getVisible == widget.quote
+                //     ? RadialGradient(
+                //         colors: List.generate(
+                //             (10),
+                //             (i) => clrs.appColor
+                //                 .withValues(alpha: (i + 1) * 0.04)),
+                //         center: AlignmentGeometry.topRight)
+                //     : null,
                 boxShadow: [
                   BoxShadow(
                     color: clrs.appColor.withValues(alpha: 0.1),
@@ -62,7 +72,9 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                   ),
                 ],
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
-                color: Colors.white,
+                color: quotesNot.getVisible == widget.quote
+                    ? clrs.appColor.withValues(alpha: 0.2)
+                    : Colors.white,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

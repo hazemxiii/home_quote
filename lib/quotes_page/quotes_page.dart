@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:home_quote/quotes_page/no_visible_btn.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
 import 'package:home_quote/quotes_page/filter_dialog.dart';
@@ -87,40 +88,6 @@ class _QuotesPageState extends State<QuotesPage> {
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Column(
                 children: [
-                  // InkWell(
-                  //   onTap: () {
-                  //     Provider.of<QuotesNotifier>(context, listen: false)
-                  //         .changeVisible();
-                  //   },
-                  //   child: Consumer<QuotesNotifier>(
-                  //     builder: (context, qNotifier, child) {
-                  //       if (qNotifier.getVisible == null) {
-                  //         return Container(
-                  //           width: double.infinity,
-                  //           padding: const EdgeInsets.symmetric(vertical: 50),
-                  //           decoration: BoxDecoration(
-                  //               borderRadius: BorderRadius.circular(10),
-                  //               color: Colors.white),
-                  //           child: Column(
-                  //             children: [
-                  //               Icon(Icons.shuffle, color: clrs.appColor),
-                  //               Text("No Quote Selected",
-                  //                   style: TextStyle(color: clrs.appColor))
-                  //             ],
-                  //           ),
-                  //         );
-                  //       }
-                  //       return IgnorePointer(
-                  //         ignoring: true,
-                  //         child: QuoteWidget(
-                  //           isDisplay: true,
-                  //           quote: qNotifier.getVisible!,
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 10),
                   Flex(
                     spacing: 10,
                     direction: _isScreenSmall ? Axis.vertical : Axis.horizontal,
@@ -203,6 +170,14 @@ class _QuotesPageState extends State<QuotesPage> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  if (quotesNot.getVisible == null) ...[
+                    NoVisibleBtn(
+                      onTap: quotesNotX.changeVisible,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    )
+                  ],
                   Expanded(
                       child: GridView.builder(
                           itemCount: quotesNot.filtered.length,

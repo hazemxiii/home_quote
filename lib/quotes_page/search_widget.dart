@@ -44,7 +44,7 @@ class _SearchWidgetState extends State<SearchWidget> {
   Widget build(BuildContext context) {
     final c = context.watch<StyleNotifier>().appColor.withValues(alpha: 0.4);
     return AnimatedContainer(
-      height: 50,
+      height: widget.canBeHidden ? 50 : null,
       duration: const Duration(milliseconds: 200),
       constraints: widget.canBeHidden
           ? BoxConstraints(
