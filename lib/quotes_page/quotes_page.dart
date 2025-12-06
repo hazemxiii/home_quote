@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
 import 'package:home_quote/quotes_page/filter_dialog.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
@@ -38,6 +38,7 @@ class _QuotesPageState extends State<QuotesPage> {
 
   QuotesNotifier get quotesNotX => context.read<QuotesNotifier>();
   QuotesNotifier get quotesNot => context.watch<QuotesNotifier>();
+  bool get _isScreenSmall => MediaQuery.of(context).size.width < 400;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +61,7 @@ class _QuotesPageState extends State<QuotesPage> {
               }),
           backgroundColor: clrs.c,
           appBar: AppBar(
+            scrolledUnderElevation: 0,
             title: const Text("My Quotes"),
             backgroundColor: clrs.c,
             foregroundColor: clrs.appColor,
@@ -85,113 +87,118 @@ class _QuotesPageState extends State<QuotesPage> {
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Column(
                 children: [
-                  InkWell(
-                    onTap: () {
-                      Provider.of<QuotesNotifier>(context, listen: false)
-                          .changeVisible();
-                    },
-                    child: Consumer<QuotesNotifier>(
-                      builder: (context, qNotifier, child) {
-                        if (qNotifier.getVisible == null) {
-                          return Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 50),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.white),
-                            child: Column(
-                              children: [
-                                Icon(Icons.shuffle, color: clrs.appColor),
-                                Text("No Quote Selected",
-                                    style: TextStyle(color: clrs.appColor))
-                              ],
-                            ),
-                          );
-                        }
-                        return IgnorePointer(
-                          ignoring: true,
-                          child: QuoteWidget(
-                            isDisplay: true,
-                            quote: qNotifier.getVisible!,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
+                  // InkWell(
+                  //   onTap: () {
+                  //     Provider.of<QuotesNotifier>(context, listen: false)
+                  //         .changeVisible();
+                  //   },
+                  //   child: Consumer<QuotesNotifier>(
+                  //     builder: (context, qNotifier, child) {
+                  //       if (qNotifier.getVisible == null) {
+                  //         return Container(
+                  //           width: double.infinity,
+                  //           padding: const EdgeInsets.symmetric(vertical: 50),
+                  //           decoration: BoxDecoration(
+                  //               borderRadius: BorderRadius.circular(10),
+                  //               color: Colors.white),
+                  //           child: Column(
+                  //             children: [
+                  //               Icon(Icons.shuffle, color: clrs.appColor),
+                  //               Text("No Quote Selected",
+                  //                   style: TextStyle(color: clrs.appColor))
+                  //             ],
+                  //           ),
+                  //         );
+                  //       }
+                  //       return IgnorePointer(
+                  //         ignoring: true,
+                  //         child: QuoteWidget(
+                  //           isDisplay: true,
+                  //           quote: qNotifier.getVisible!,
+                  //         ),
+                  //       );
+                  //     },
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 10),
+                  Flex(
+                    spacing: 10,
+                    direction: _isScreenSmall ? Axis.vertical : Axis.horizontal,
                     children: [
-                      Expanded(
-                        child: ChangeNotifierProvider.value(
-                            value: context.read<QuotesNotifier>(),
-                            child: SearchWidget(
-                                controller: searchController,
-                                onClear: () {
-                                  quotesNotX.setSearch("");
-                                },
-                                hint: "Search by quote")),
-                      ),
-                      const SizedBox(width: 10),
-                      FilterBtn(
-                        text: "Author",
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                final oldAuthor = [
-                                  ...quotesNotX.selectedAuthor
-                                ];
-                                return Consumer<QuotesNotifier>(
-                                    builder: (context, quotesNot, child) {
-                                  final authors = <String>[...oldAuthor];
-                                  for (final quote in quotesNot.quotes) {
-                                    if (quote.author != null) {
-                                      authors.add(quote.author!);
-                                    }
-                                  }
-                                  authors.toSet().toList();
-                                  return FilterDialog(
-                                      type: "Author",
-                                      items: authors,
-                                      selected: quotesNot.selectedAuthor,
-                                      onCancel: () {
-                                        quotesNot.setSelectedAuthor(oldAuthor);
-                                      },
-                                      onPressed: (v) {
-                                        quotesNot.toggleAuthorSelect(v);
-                                      });
-                                });
-                              });
-                        },
-                      ),
-                      const SizedBox(width: 5),
-                      FilterBtn(
-                        text: "Tags",
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                final oldTag = [...quotesNotX.selectedTag];
-                                return Consumer<QuotesNotifier>(
-                                    builder: (context, quotesNot, child) {
-                                  final tags = <String>[...oldTag];
-                                  for (final quote in quotesNot.quotes) {
-                                    tags.addAll(quote.tags);
-                                  }
-                                  tags.toSet().toList();
-                                  return FilterDialog(
-                                      type: "Tags",
-                                      items: tags,
-                                      selected: quotesNot.selectedTag,
-                                      onCancel: () {
-                                        quotesNot.setSelectedTag(oldTag);
-                                      },
-                                      onPressed: (v) {
-                                        quotesNot.toggleTagSelect(v);
-                                      });
-                                });
-                              });
-                        },
+                      ChangeNotifierProvider.value(
+                          value: context.read<QuotesNotifier>(),
+                          child: SearchWidget(
+                              canBeHidden: true,
+                              controller: searchController,
+                              onClear: () {
+                                quotesNotX.setSearch("");
+                              },
+                              hint: "Search by quote")),
+                      Row(
+                        children: [
+                          FilterBtn(
+                            text: "Author",
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    final oldAuthor = {
+                                      ...quotesNotX.selectedAuthor
+                                    };
+                                    return Consumer<QuotesNotifier>(
+                                        builder: (context, quotesNot, child) {
+                                      final authors = <String>{...oldAuthor};
+                                      for (final quote in quotesNot.quotes) {
+                                        if ((quote.author ?? "").isNotEmpty) {
+                                          authors.add(quote.author!);
+                                        }
+                                      }
+                                      return FilterDialog(
+                                          type: "Author",
+                                          items: authors.toList(),
+                                          selected: quotesNot.selectedAuthor,
+                                          onCancel: () {
+                                            quotesNot.setSelectedAuthor(
+                                                oldAuthor.toList());
+                                          },
+                                          onPressed: (v) {
+                                            quotesNot.toggleAuthorSelect(v);
+                                          });
+                                    });
+                                  });
+                            },
+                          ),
+                          const SizedBox(width: 5),
+                          FilterBtn(
+                            text: "Tags",
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    final oldTag = {...quotesNotX.selectedTag};
+                                    return Consumer<QuotesNotifier>(
+                                        builder: (context, quotesNot, child) {
+                                      final tags = <String>{...oldTag};
+                                      for (final quote in quotesNot.quotes) {
+                                        tags.addAll(quote.tags);
+                                      }
+                                      tags.toSet().toList();
+                                      return FilterDialog(
+                                          type: "Tags",
+                                          items: tags.toList(),
+                                          selected: quotesNot.selectedTag,
+                                          onCancel: () {
+                                            quotesNot.setSelectedTag(
+                                                oldTag.toList());
+                                          },
+                                          onPressed: (v) {
+                                            quotesNot.toggleTagSelect(v);
+                                          });
+                                    });
+                                  });
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -204,7 +211,7 @@ class _QuotesPageState extends State<QuotesPage> {
                                   crossAxisSpacing: 15,
                                   mainAxisSpacing: 15,
                                   mainAxisExtent: 300,
-                                  maxCrossAxisExtent: 300),
+                                  maxCrossAxisExtent: 400),
                           itemBuilder: (context, index) {
                             final quote = quotesNotX.filtered[index];
                             return QuoteWidget(quote: quote);

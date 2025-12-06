@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/search_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -65,41 +65,43 @@ class _FilterDialogState extends State<FilterDialog> {
                   fontSize: 16)),
         ],
       ),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        spacing: 10,
-        children: [
-          SearchWidget(
-              controller: controller,
-              onClear: () {},
-              hint: "Search ${widget.type}"),
-          Wrap(
-            spacing: 5,
-            runSpacing: 5,
-            children: widget.items.map((e) {
-              if (controller.text.isNotEmpty &&
-                  ratio(controller.text, e) < 25) {
-                return const SizedBox.shrink();
-              }
-              return InkWell(
-                onTap: () {
-                  widget.onPressed(e);
-                },
-                child: Chip(
-                  backgroundColor: widget.selected.contains(e)
-                      ? context.watch<StyleNotifier>().appColor
-                      : Colors.white,
-                  label: Text(e,
-                      style: TextStyle(
-                          color: widget.selected.contains(e)
-                              ? Colors.white
-                              : context.watch<StyleNotifier>().appColor)),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 10,
+          children: [
+            SearchWidget(
+                controller: controller,
+                onClear: () {},
+                hint: "Search ${widget.type}"),
+            Wrap(
+              spacing: 5,
+              runSpacing: 5,
+              children: widget.items.map((e) {
+                if (controller.text.isNotEmpty &&
+                    ratio(controller.text, e) < 25) {
+                  return const SizedBox.shrink();
+                }
+                return InkWell(
+                  onTap: () {
+                    widget.onPressed(e);
+                  },
+                  child: Chip(
+                    backgroundColor: widget.selected.contains(e)
+                        ? context.watch<StyleNotifier>().appColor
+                        : Colors.white,
+                    label: Text(e,
+                        style: TextStyle(
+                            color: widget.selected.contains(e)
+                                ? Colors.white
+                                : context.watch<StyleNotifier>().appColor)),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

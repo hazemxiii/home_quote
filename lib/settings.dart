@@ -6,7 +6,7 @@ import "package:home_quote/quotes_notifier.dart";
 import "package:home_quote/settings/color_palette.dart";
 import "package:home_quote/settings/color_picker.dart";
 import "package:flutter/material.dart";
-import "package:home_quote/global.dart";
+import "package:home_quote/style_notifier.dart";
 import "package:provider/provider.dart";
 import 'package:file_picker/file_picker.dart';
 
@@ -31,9 +31,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             title: const Text("Settings"),
             centerTitle: true,
           ),
-          body: Container(
+          body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 SwitchListTile(
                   value: clrs.isTransparent,
@@ -53,6 +54,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                   const ColorPicker(
                       mode: PickerModes.main, text: "Widget Color"),
                 const ColorPicker(mode: PickerModes.text, text: "Text Color"),
+                const ColorPicker(mode: PickerModes.app, text: "App Color"),
                 const SizedBox(
                   height: 10,
                 ),
@@ -112,6 +114,11 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       color: clrs.appColor,
                     ),
                   ),
+                ),
+                Text(
+                  "2.0.0",
+                  style:
+                      TextStyle(color: context.watch<StyleNotifier>().appColor),
                 )
               ],
             ),

@@ -20,6 +20,9 @@ class StyleNotifier extends ChangeNotifier {
     if (!prefs.containsKey("color")) {
       prefs.setString("color", getHex(color));
     }
+    if (!prefs.containsKey("appColor")) {
+      prefs.setString("appColor", getHex(appColor));
+    }
     if (!prefs.containsKey("textColor")) {
       prefs.setString("textColor", getHex(textColor));
     }
@@ -28,6 +31,7 @@ class StyleNotifier extends ChangeNotifier {
     }
 
     textColor = parseColorFromHex(prefs.getString("textColor")!);
+    appColor = parseColorFromHex(prefs.getString("appColor")!);
     color = parseColorFromHex(prefs.getString("color")!);
     _transparent = prefs.getBool("transparent")!;
 
@@ -67,6 +71,14 @@ class StyleNotifier extends ChangeNotifier {
     color = c;
     prefs.setString("color", getHex(color));
     updateWidgetColors();
+    notifyListeners();
+  }
+
+  void setAppColor(Color c) async {
+    /// changes text widget background color
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    appColor = c;
+    prefs.setString("appColor", getHex(c));
     notifyListeners();
   }
 

@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/models/quote.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +16,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
   late TextEditingController _nameCont;
   late TextEditingController _authorCont;
   late TextEditingController _tagCont;
+  final _focusNode = FocusNode();
   late final Quote quote;
   @override
   void initState() {
@@ -38,6 +39,14 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
     super.dispose();
   }
 
+  void onTagSubmit() {
+    setState(() {
+      quote.tags.add(_tagCont.text);
+      _tagCont.clear();
+      _focusNode.requestFocus();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
@@ -49,35 +58,30 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10))),
-        // content: TextField(
-        //     cursorColor: clrs.getTextC,
-        //     controller: textEditingController,
-        //     style: TextStyle(color: clrs.getTextC),
-        //     decoration: InputDecoration(focusedBorder: border, border: border)),
-        content: SizedBox(
+        content: Container(
           width: min(MediaQuery.of(context).size.width - 50, 500),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 15,
-            children: [
-              _input("Quote", "Enter quote", _nameCont, 3),
-              _input("Author", "Who said it?", _authorCont, null),
-              _input("Tags", "Add tags", _tagCont, null,
-                  suffix: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          quote.tags.add(_tagCont.text);
-                          _tagCont.clear();
-                        });
-                      },
-                      icon: Icon(Icons.add, color: clrs.appColor))),
-              Wrap(
-                spacing: 3,
-                runSpacing: 3,
-                children: quote.tags.map(_tagWidget).toList(),
-              )
-            ],
+          constraints: const BoxConstraints(maxHeight: 400),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 15,
+              children: [
+                _input("Quote", "Enter quote", _nameCont, 3),
+                _input("Author", "Who said it?", _authorCont, null),
+                _input("Tags", "Add tags", _tagCont, null,
+                    node: _focusNode,
+                    onSubmitted: (_) => onTagSubmit(),
+                    suffix: IconButton(
+                        onPressed: onTagSubmit,
+                        icon: Icon(Icons.add, color: clrs.appColor))),
+                Wrap(
+                  spacing: 3,
+                  runSpacing: 3,
+                  children: quote.tags.map(_tagWidget).toList(),
+                )
+              ],
+            ),
           ),
         ),
         actions: [
@@ -110,29 +114,35 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
           borderRadius: BorderRadius.circular(900),
           color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              tag,
-              style: TextStyle(color: context.watch<StyleNotifier>().appColor),
-            ),
-            IconButton(
-                padding: const EdgeInsets.all(0),
-                onPressed: () {
-                  setState(() {
-                    quote.tags.remove(tag);
-                  });
-                },
-                icon: Icon(Icons.close,
-                    color: context.watch<StyleNotifier>().appColor)),
-          ],
-        ));
+        child: LayoutBuilder(builder: (context, con) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: con.maxWidth - 50),
+                child: Text(
+                  overflow: TextOverflow.ellipsis,
+                  tag,
+                  style:
+                      TextStyle(color: context.watch<StyleNotifier>().appColor),
+                ),
+              ),
+              InkWell(
+                  onTap: () {
+                    setState(() {
+                      quote.tags.remove(tag);
+                    });
+                  },
+                  child: Icon(Icons.close,
+                      color: context.watch<StyleNotifier>().appColor)),
+            ],
+          );
+        }));
   }
 
   Widget _input(
       String title, String hint, TextEditingController controller, int? lines,
-      {Widget? suffix}) {
+      {Widget? suffix, Function(String s)? onSubmitted, FocusNode? node}) {
     final c = context.watch<StyleNotifier>().appColor;
     return Column(
       spacing: 5,
@@ -148,6 +158,9 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
           children: [
             Expanded(
               child: TextField(
+                onSubmitted: onSubmitted,
+                textCapitalization: TextCapitalization.sentences,
+                focusNode: node,
                 minLines: lines,
                 maxLines: lines != null ? null : 1,
                 cursorColor: c,

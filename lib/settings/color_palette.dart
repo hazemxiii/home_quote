@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 
-enum PickerModes { main, text }
+enum PickerModes { main, text, app }
 
 class ColorPalette extends StatefulWidget {
   final PickerModes mode;

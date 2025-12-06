@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 import 'package:flex_color_picker/flex_color_picker.dart' as color_p;
 import 'package:home_quote/settings/color_palette.dart';
 import 'package:provider/provider.dart';
@@ -45,8 +45,13 @@ class _ColorPickerState extends State<ColorPicker> {
                           showColorCode: true,
                           color: clrs.textColor,
                           onColorChanged: (color) {
-                            Provider.of<StyleNotifier>(context, listen: false)
-                                .setTextColor(color);
+                            if (widget.mode == PickerModes.text) {
+                              Provider.of<StyleNotifier>(context, listen: false)
+                                  .setTextColor(color);
+                            } else {
+                              Provider.of<StyleNotifier>(context, listen: false)
+                                  .setAppColor(color);
+                            }
                           },
                         ),
                 );
@@ -62,7 +67,7 @@ class _ColorPickerState extends State<ColorPicker> {
             //     ? clrs.getTextC
             //     : clrs.getColorC
             color:
-                widget.mode == PickerModes.text ? Colors.white : clrs.appColor,
+                widget.mode == PickerModes.main ? clrs.appColor : Colors.white,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -70,9 +75,9 @@ class _ColorPickerState extends State<ColorPicker> {
             children: [
               Text(widget.text,
                   style: TextStyle(
-                      color: widget.mode == PickerModes.text
-                          ? clrs.appColor
-                          : Colors.white)),
+                      color: widget.mode == PickerModes.main
+                          ? Colors.white
+                          : clrs.appColor)),
               Container(
                 width: 20,
                 height: 20,
@@ -81,7 +86,9 @@ class _ColorPickerState extends State<ColorPicker> {
                   shape: BoxShape.circle,
                   color: widget.mode == PickerModes.text
                       ? clrs.textColor
-                      : clrs.color,
+                      : (widget.mode == PickerModes.app
+                          ? clrs.appColor
+                          : clrs.color),
                 ),
               )
             ],

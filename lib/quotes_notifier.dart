@@ -17,18 +17,24 @@ class QuotesNotifier extends ChangeNotifier {
   final _selectedTag = <String>[];
   final _selectedAuthor = <String>[];
 
-  QuotesNotifier() {
-    loadData();
+  QuotesNotifier({bool skipLoading = false}) {
+    if (!skipLoading) {
+      loadData();
+    }
   }
 
   List<String> get selectedAuthor => _selectedAuthor;
   List<String> get selectedTag => _selectedTag;
 
   List<Quote> get filtered {
-    return quotes.where((quote) => !isFilteredOut(quote)).toList();
+    return <Quote>[if (visible != null) visible!] +
+        quotes.where((quote) => !isFilteredOut(quote)).toList();
   }
 
   bool isFilteredOut(Quote quote) {
+    if (quote == visible) {
+      return true;
+    }
     if (_search.isNotEmpty) {
       final r = ratio(quote.quote, _search);
       if (r < 25) {
@@ -38,8 +44,8 @@ class QuotesNotifier extends ChangeNotifier {
     if (!_findAnyInAList(selectedTag, quote.tags)) {
       return true;
     }
-    if (quote.author != null &&
-        !_findAnyInAList(selectedAuthor, [quote.author ?? ''])) {
+    if (!_findAnyInAList(selectedAuthor, [quote.author ?? '']) &&
+        selectedAuthor.isNotEmpty) {
       return true;
     }
     return false;
@@ -98,7 +104,6 @@ class QuotesNotifier extends ChangeNotifier {
       saveData();
     }
     notifyListeners();
-
     return true;
   }
 

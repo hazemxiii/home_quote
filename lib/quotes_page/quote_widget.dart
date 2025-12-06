@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:home_quote/global.dart';
+import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
 import 'package:home_quote/models/quote.dart';
 import 'package:home_quote/quotes_notifier.dart';
@@ -40,80 +40,85 @@ class _QuoteWidgetState extends State<QuoteWidget> {
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
-      return InkWell(
-        onTap: () {
-          Provider.of<QuotesNotifier>(context, listen: false)
-              .selectQuote(widget.quote);
-        },
-        child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: clrs.appColor.withValues(alpha: 0.1),
-                  blurRadius: 2,
-                  spreadRadius: 1,
-                  offset: const Offset(1, 3),
-                ),
-              ],
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              color: Colors.white,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: !widget.isDisplay
-                      ? [
-                          Checkbox(
-                              shape: const CircleBorder(),
-                              checkColor: Colors.white,
-                              activeColor: clrs.appColor,
-                              value: widget.quote.selected,
-                              onChanged: (v) {
-                                context
-                                    .read<QuotesNotifier>()
-                                    .selectQuote(widget.quote);
-                              })
-                        ]
-                      : [Icon(Icons.shuffle_outlined, color: clrs.appColor)],
-                ),
-                Text(
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  '"${widget.quote.quote}"',
-                  style: TextStyle(
-                      color: clrs.appColor,
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic),
-                ),
-                if ((widget.quote.author?.isNotEmpty) ?? false) ...[
+      return Material(
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: () {
+            Provider.of<QuotesNotifier>(context, listen: false)
+                .selectQuote(widget.quote);
+          },
+          child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: clrs.appColor.withValues(alpha: 0.1),
+                    blurRadius: 2,
+                    spreadRadius: 1,
+                    offset: const Offset(1, 3),
+                  ),
+                ],
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: !widget.isDisplay
+                        ? [
+                            Checkbox(
+                                shape: const CircleBorder(),
+                                checkColor: Colors.white,
+                                activeColor: clrs.appColor,
+                                value: widget.quote.selected,
+                                onChanged: (v) {
+                                  context
+                                      .read<QuotesNotifier>()
+                                      .selectQuote(widget.quote);
+                                })
+                          ]
+                        : [Icon(Icons.shuffle_outlined, color: clrs.appColor)],
+                  ),
+                  Text(
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    '"${widget.quote.quote}"',
+                    style: TextStyle(
+                        color: clrs.appColor,
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic),
+                  ),
+                  if ((widget.quote.author?.isNotEmpty) ?? false) ...[
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Text(
+                      '—${widget.quote.author!}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                      ),
+                    )
+                  ],
                   const SizedBox(
                     height: 15,
                   ),
-                  Text(
-                    '—${widget.quote.author!}',
-                    style: const TextStyle(
-                      color: Colors.grey,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: widget.quote.tags.map(_tagWidget).toList(),
                     ),
-                  )
-                ],
-                const SizedBox(
-                  height: 15,
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: widget.quote.tags.map(_tagWidget).toList(),
                   ),
-                ),
-                _options(),
-              ],
-            )),
+                  _options(),
+                ],
+              )),
+        ),
       );
     });
   }

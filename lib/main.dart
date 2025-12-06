@@ -1,15 +1,19 @@
+import 'dart:io';
+
 import "package:flutter/material.dart";
 import 'package:home_quote/quotes_notifier.dart';
 import 'package:home_quote/quotes_page/quotes_page.dart';
-import 'global.dart';
+import 'style_notifier.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
-void f() async {
-  print((await SharedPreferences.getInstance()).getString("textColor"));
-}
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isAndroid) {
+    AndroidAlarmManager.initialize();
+    await AndroidAlarmManager.periodic(
+        const Duration(minutes: 15), 0, changeVisible);
+  }
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => StyleNotifier()),
@@ -26,4 +30,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(home: QuotesPage());
   }
+}
+
+@pragma('vm:entry-point')
+Future<void> changeVisible() async {
+  final quotesNotifier = QuotesNotifier(skipLoading: true);
+  await quotesNotifier.loadData();
+  quotesNotifier.changeVisible();
 }

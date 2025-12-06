@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../global.dart';
+import '../style_notifier.dart';
 
 class FilterBtn extends StatefulWidget {
   final String text;
@@ -29,6 +29,11 @@ class _FilterBtnState extends State<FilterBtn> {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
+          border: Border.all(
+              color: context
+                  .watch<StyleNotifier>()
+                  .appColor
+                  .withValues(alpha: 0.7)),
           color: isHovered
               ? context.watch<StyleNotifier>().appColor
               : Colors.white,
