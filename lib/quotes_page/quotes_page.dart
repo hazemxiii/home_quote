@@ -37,9 +37,51 @@ class _QuotesPageState extends State<QuotesPage> {
     });
   }
 
+  void showFilterDialog(bool isAuthor) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          final oldData = {
+            ...(isAuthor ? quotesNotX.selectedAuthor : quotesNotX.selectedTag)
+          };
+          return Consumer<QuotesNotifier>(builder: (context, quotesNot, child) {
+            final data = <String>{...oldData};
+            for (final quote in quotesNot.quotes) {
+              if (isAuthor) {
+                if ((quote.author ?? "").isNotEmpty) {
+                  data.add(quote.author!);
+                }
+              } else {
+                for (final quote in quotesNot.quotes) {
+                  data.addAll(quote.tags);
+                }
+              }
+            }
+            return FilterDialog(
+                type: isAuthor ? "Author" : "Tags",
+                items: data.toList(),
+                selected:
+                    isAuthor ? quotesNot.selectedAuthor : quotesNot.selectedTag,
+                onCancel: () {
+                  if (isAuthor) {
+                    quotesNot.setSelectedAuthor(oldData.toList());
+                  } else {
+                    quotesNotX.setSelectedTag(oldData.toList());
+                  }
+                },
+                onPressed: (v) {
+                  if (isAuthor) {
+                    quotesNotX.toggleAuthorSelect(v);
+                  } else {
+                    quotesNotX.toggleTagSelect(v);
+                  }
+                });
+          });
+        });
+  }
+
   QuotesNotifier get quotesNotX => context.read<QuotesNotifier>();
   QuotesNotifier get quotesNot => context.watch<QuotesNotifier>();
-  bool get _isScreenSmall => MediaQuery.of(context).size.width < 400;
 
   @override
   Widget build(BuildContext context) {
@@ -87,97 +129,36 @@ class _QuotesPageState extends State<QuotesPage> {
               constraints: const BoxConstraints(maxWidth: 1200),
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Column(
+                spacing: 10,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flex(
-                    spacing: 10,
-                    direction: _isScreenSmall ? Axis.vertical : Axis.horizontal,
+                  ChangeNotifierProvider.value(
+                      value: context.read<QuotesNotifier>(),
+                      child: SearchWidget(
+                          canBeHidden: true,
+                          controller: searchController,
+                          onClear: () {
+                            quotesNotX.setSearch("");
+                          },
+                          hint: "Search by quote")),
+                  Row(
                     children: [
-                      ChangeNotifierProvider.value(
-                          value: context.read<QuotesNotifier>(),
-                          child: SearchWidget(
-                              canBeHidden: true,
-                              controller: searchController,
-                              onClear: () {
-                                quotesNotX.setSearch("");
-                              },
-                              hint: "Search by quote")),
-                      Row(
-                        children: [
-                          FilterBtn(
-                            text: "Author",
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    final oldAuthor = {
-                                      ...quotesNotX.selectedAuthor
-                                    };
-                                    return Consumer<QuotesNotifier>(
-                                        builder: (context, quotesNot, child) {
-                                      final authors = <String>{...oldAuthor};
-                                      for (final quote in quotesNot.quotes) {
-                                        if ((quote.author ?? "").isNotEmpty) {
-                                          authors.add(quote.author!);
-                                        }
-                                      }
-                                      return FilterDialog(
-                                          type: "Author",
-                                          items: authors.toList(),
-                                          selected: quotesNot.selectedAuthor,
-                                          onCancel: () {
-                                            quotesNot.setSelectedAuthor(
-                                                oldAuthor.toList());
-                                          },
-                                          onPressed: (v) {
-                                            quotesNot.toggleAuthorSelect(v);
-                                          });
-                                    });
-                                  });
-                            },
-                          ),
-                          const SizedBox(width: 5),
-                          FilterBtn(
-                            text: "Tags",
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    final oldTag = {...quotesNotX.selectedTag};
-                                    return Consumer<QuotesNotifier>(
-                                        builder: (context, quotesNot, child) {
-                                      final tags = <String>{...oldTag};
-                                      for (final quote in quotesNot.quotes) {
-                                        tags.addAll(quote.tags);
-                                      }
-                                      tags.toSet().toList();
-                                      return FilterDialog(
-                                          type: "Tags",
-                                          items: tags.toList(),
-                                          selected: quotesNot.selectedTag,
-                                          onCancel: () {
-                                            quotesNot.setSelectedTag(
-                                                oldTag.toList());
-                                          },
-                                          onPressed: (v) {
-                                            quotesNot.toggleTagSelect(v);
-                                          });
-                                    });
-                                  });
-                            },
-                          ),
-                        ],
+                      FilterBtn(
+                        text: "Author",
+                        onPressed: () => showFilterDialog(true),
+                      ),
+                      const SizedBox(width: 5),
+                      FilterBtn(
+                        text: "Tags",
+                        onPressed: () => showFilterDialog(false),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (quotesNot.getVisible == null) ...[
+                  if (quotesNot.getVisible == null)
                     NoVisibleBtn(
                       onTap: quotesNotX.changeVisible,
                     ),
-                    const SizedBox(
-                      height: 20,
-                    )
-                  ],
                   Expanded(
                       child: GridView.builder(
                           itemCount: quotesNot.filtered.length,

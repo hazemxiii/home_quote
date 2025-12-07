@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 class NoVisibleBtn extends StatelessWidget {
   final VoidCallback onTap;
   const NoVisibleBtn({super.key, required this.onTap});
-
   @override
   Widget build(BuildContext context) {
     final styleNot = context.watch<StyleNotifier>();

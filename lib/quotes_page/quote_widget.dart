@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
@@ -55,14 +57,15 @@ class _QuoteWidgetState extends State<QuoteWidget> {
               // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
-                // gradient: quotesNot.getVisible == widget.quote
-                //     ? RadialGradient(
-                //         colors: List.generate(
-                //             (10),
-                //             (i) => clrs.appColor
-                //                 .withValues(alpha: (i + 1) * 0.04)),
-                //         center: AlignmentGeometry.topRight)
-                //     : null,
+                gradient: quotesNot.getVisible == widget.quote
+                    ? LinearGradient(
+                        transform: const GradientRotation(45 * (math.pi / 180)),
+                        colors: [
+                            clrs.appColor.withValues(alpha: .3),
+                            clrs.appColor.withValues(alpha: .2),
+                            clrs.appColor.withValues(alpha: .3)
+                          ])
+                    : null,
                 boxShadow: [
                   BoxShadow(
                     color: clrs.appColor.withValues(alpha: 0.1),
@@ -72,9 +75,7 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                   ),
                 ],
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
-                color: quotesNot.getVisible == widget.quote
-                    ? clrs.appColor.withValues(alpha: 0.2)
-                    : Colors.white,
+                color: Colors.white,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

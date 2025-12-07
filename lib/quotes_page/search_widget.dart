@@ -50,7 +50,7 @@ class _SearchWidgetState extends State<SearchWidget> {
           ? BoxConstraints(
               maxHeight: 50,
               maxWidth: isExpanded
-                  ? min(500, MediaQuery.of(context).size.width - 50)
+                  ? min(500, MediaQuery.of(context).size.width - 0)
                   : 50)
           : null,
       alignment: Alignment.centerLeft,
@@ -60,7 +60,7 @@ class _SearchWidgetState extends State<SearchWidget> {
         color: Colors.white,
         // color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2)
       ),
-      // TODO fix search widget responsivness
+      // TODO hide the filter btn
       child: TextField(
         focusNode: _node,
         cursorColor: context.watch<StyleNotifier>().appColor,
