@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:home_quote/quotes_page/expand_filter_btn.dart';
 import 'package:home_quote/quotes_page/no_visible_btn.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
@@ -20,6 +21,7 @@ class QuotesPage extends StatefulWidget {
 }
 
 class _QuotesPageState extends State<QuotesPage> {
+  bool isFilterShown = true;
   Timer? timer;
   final searchController = TextEditingController();
   @override
@@ -141,20 +143,39 @@ class _QuotesPageState extends State<QuotesPage> {
                             quotesNotX.setSearch("");
                           },
                           hint: "Search by quote")),
-                  Row(
-                    children: [
-                      FilterBtn(
-                        text: "Author",
-                        onPressed: () => showFilterDialog(true),
-                      ),
-                      const SizedBox(width: 5),
-                      FilterBtn(
-                        text: "Tags",
-                        onPressed: () => showFilterDialog(false),
-                      ),
-                    ],
+                  ExpandFilterBtn(
+                      isExpanded: isFilterShown,
+                      onTap: () {
+                        setState(() {
+                          isFilterShown = !isFilterShown;
+                        });
+                      }),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    child: !isFilterShown
+                        ? const SizedBox.shrink()
+                        : Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                FilterBtn(
+                                  text: "Author",
+                                  onPressed: () => showFilterDialog(true),
+                                ),
+                                const SizedBox(width: 5),
+                                FilterBtn(
+                                  text: "Tags",
+                                  onPressed: () => showFilterDialog(false),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
                   if (quotesNot.getVisible == null)
                     NoVisibleBtn(
                       onTap: quotesNotX.changeVisible,

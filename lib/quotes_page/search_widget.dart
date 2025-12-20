@@ -31,7 +31,7 @@ class _SearchWidgetState extends State<SearchWidget> {
         setState(() {
           isExpanded = true;
         });
-      } else {
+      } else if (widget.controller.text.isEmpty) {
         setState(() {
           isExpanded = false;
         });
@@ -60,7 +60,6 @@ class _SearchWidgetState extends State<SearchWidget> {
         color: Colors.white,
         // color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2)
       ),
-      // TODO hide the filter btn
       child: TextField(
         focusNode: _node,
         cursorColor: context.watch<StyleNotifier>().appColor,
@@ -79,6 +78,9 @@ class _SearchWidgetState extends State<SearchWidget> {
                   onPressed: () {
                     widget.controller.clear();
                     widget.onClear();
+                    setState(() {
+                      isExpanded = false;
+                    });
                   },
                 ),
           // border: canBeHidden ? InputBorder.none : null,

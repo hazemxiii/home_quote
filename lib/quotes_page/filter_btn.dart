@@ -13,10 +13,10 @@ class FilterBtn extends StatefulWidget {
 
 class _FilterBtnState extends State<FilterBtn> {
   bool isHovered = false;
+  StyleNotifier get styleNot => context.watch<StyleNotifier>();
   @override
   Widget build(BuildContext context) {
-    final textC =
-        isHovered ? Colors.white : context.watch<StyleNotifier>().appColor;
+    final textC = isHovered ? Colors.white : styleNot.appColor;
     return InkWell(
       onTap: widget.onPressed,
       onHover: (value) {
@@ -29,14 +29,10 @@ class _FilterBtnState extends State<FilterBtn> {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-              color: context
-                  .watch<StyleNotifier>()
-                  .appColor
-                  .withValues(alpha: 0.7)),
+          border: Border.all(color: styleNot.appColor.withValues(alpha: 0.7)),
           color: isHovered
-              ? context.watch<StyleNotifier>().appColor
-              : Colors.white,
+              ? styleNot.appColor
+              : Color.lerp(styleNot.appColor, Colors.white, 0.8),
         ),
         child: Row(
           spacing: 5,
@@ -44,6 +40,7 @@ class _FilterBtnState extends State<FilterBtn> {
             Icon(
               Icons.filter_alt_outlined,
               color: textC,
+              size: 18,
             ),
             Text(
               widget.text,
