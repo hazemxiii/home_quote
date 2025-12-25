@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/input_dialog.dart';
@@ -48,7 +47,9 @@ class _QuoteWidgetState extends State<QuoteWidget> {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Material(
         clipBehavior: Clip.hardEdge,
+        color: Colors.transparent,
         child: InkWell(
+          hoverColor: Colors.transparent,
           onTap: () {
             quotesNotX.selectQuote(widget.quote);
           },
@@ -58,13 +59,18 @@ class _QuoteWidgetState extends State<QuoteWidget> {
               // margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
+                border: Border.all(
+                    color: quotesNot.visible == widget.quote
+                        ? clrs.appColor
+                        : Colors.transparent,
+                    width: 2),
                 gradient: quotesNot.getVisible == widget.quote
                     ? LinearGradient(
                         transform: const GradientRotation(45 * (math.pi / 180)),
                         colors: [
-                            clrs.appColor.withValues(alpha: .3),
                             clrs.appColor.withValues(alpha: .2),
-                            clrs.appColor.withValues(alpha: .3)
+                            clrs.appColor.withValues(alpha: .1),
+                            clrs.appColor.withValues(alpha: .2)
                           ])
                     : null,
                 boxShadow: [
@@ -82,9 +88,21 @@ class _QuoteWidgetState extends State<QuoteWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: quotesNot.visible != widget.quote
+                        ? MainAxisAlignment.spaceBetween
+                        : MainAxisAlignment.end,
                     children: !widget.isDisplay
                         ? [
+                            if (quotesNot.visible != widget.quote)
+                              Transform.rotate(
+                                angle: math.pi / 4,
+                                child: IconButton(
+                                  icon: Icon(Icons.push_pin_outlined,
+                                      color: clrs.appColor),
+                                  onPressed: () =>
+                                      quotesNotX.changeVisible(q: widget.quote),
+                                ),
+                              ),
                             Checkbox(
                                 shape: const CircleBorder(),
                                 checkColor: Colors.white,

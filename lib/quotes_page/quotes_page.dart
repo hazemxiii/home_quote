@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:home_quote/quotes_page/expand_filter_btn.dart';
+import 'package:home_quote/quotes_page/floating_btn.dart';
 import 'package:home_quote/quotes_page/no_visible_btn.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:home_quote/quotes_page/filter_btn.dart';
 import 'package:home_quote/quotes_page/filter_dialog.dart';
-import 'package:home_quote/quotes_page/input_dialog.dart';
-import 'package:home_quote/models/quote.dart';
 import 'package:home_quote/quotes_page/quote_widget.dart';
 import 'package:home_quote/quotes_notifier.dart';
 import 'package:home_quote/quotes_page/search_widget.dart';
@@ -21,7 +20,7 @@ class QuotesPage extends StatefulWidget {
 }
 
 class _QuotesPageState extends State<QuotesPage> {
-  bool isFilterShown = true;
+  bool isFilterShown = false;
   Timer? timer;
   final searchController = TextEditingController();
   @override
@@ -89,21 +88,7 @@ class _QuotesPageState extends State<QuotesPage> {
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {
       return Scaffold(
-          floatingActionButton: FloatingActionButton(
-              backgroundColor: clrs.appColor,
-              foregroundColor: Colors.white,
-              child: const Icon(Icons.add),
-              onPressed: () async {
-                final Quote? quote = await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return const InputDialogWidget();
-                    });
-                if (quote != null && context.mounted) {
-                  Provider.of<QuotesNotifier>(context, listen: false)
-                      .addQuote(quote);
-                }
-              }),
+          floatingActionButton: const FloatingBtn(),
           backgroundColor: clrs.c,
           appBar: AppBar(
             scrolledUnderElevation: 0,
@@ -154,25 +139,18 @@ class _QuotesPageState extends State<QuotesPage> {
                     duration: const Duration(milliseconds: 200),
                     child: !isFilterShown
                         ? const SizedBox.shrink()
-                        : Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                FilterBtn(
-                                  text: "Author",
-                                  onPressed: () => showFilterDialog(true),
-                                ),
-                                const SizedBox(width: 5),
-                                FilterBtn(
-                                  text: "Tags",
-                                  onPressed: () => showFilterDialog(false),
-                                ),
-                              ],
-                            ),
+                        : Row(
+                            children: [
+                              FilterBtn(
+                                text: "Author",
+                                onPressed: () => showFilterDialog(true),
+                              ),
+                              const SizedBox(width: 5),
+                              FilterBtn(
+                                text: "Tags",
+                                onPressed: () => showFilterDialog(false),
+                              ),
+                            ],
                           ),
                   ),
                   // const SizedBox(height: 20),

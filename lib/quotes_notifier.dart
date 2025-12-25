@@ -201,13 +201,18 @@ class QuotesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeVisible() async {
+  void changeVisible({Quote? q}) async {
     try {
-      final selected = quotes.where((q) => q.selected).toList();
-      if (selected.isEmpty) {
-        visible = null;
+      if (q != null) {
+        q.selected = true;
+        visible = q;
       } else {
-        visible = selected[Random().nextInt(selected.length)];
+        final selected = quotes.where((q) => q.selected).toList();
+        if (selected.isEmpty) {
+          visible = null;
+        } else {
+          visible = selected[Random().nextInt(selected.length)];
+        }
       }
     } catch (e) {
       visible = null;

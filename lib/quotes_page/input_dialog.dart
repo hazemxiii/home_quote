@@ -26,10 +26,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
     quote = widget.quote != null
         ? Quote.fromJson(widget.quote!.toJson())
         : Quote(
-            id: DateTime.now().toString(),
-            quote: '',
-            selected: false,
-            tags: []);
+            id: DateTime.now().toString(), quote: '', selected: true, tags: []);
     super.initState();
   }
 
