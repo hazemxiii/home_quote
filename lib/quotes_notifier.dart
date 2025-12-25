@@ -36,8 +36,10 @@ class QuotesNotifier extends ChangeNotifier {
       return true;
     }
     if (_search.isNotEmpty) {
-      final r = ratio(quote.quote, _search);
-      if (r < 25) {
+      if (quote.quote
+          .split(" ")
+          .map((e) => ratio(e.trim(), _search.trim()))
+          .every((e) => e < 60)) {
         return true;
       }
     }

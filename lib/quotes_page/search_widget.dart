@@ -39,6 +39,8 @@ class _SearchWidgetState extends State<SearchWidget> {
     });
     super.initState();
   }
+  // TODO fix search ui
+  // TODO unfocus search when cleared
 
   @override
   Widget build(BuildContext context) {

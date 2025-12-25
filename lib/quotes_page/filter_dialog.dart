@@ -80,7 +80,7 @@ class _FilterDialogState extends State<FilterDialog> {
               runSpacing: 5,
               children: widget.items.map((e) {
                 if (controller.text.isNotEmpty &&
-                    ratio(controller.text, e) < 25) {
+                    partialRatio(controller.text, e) < 60) {
                   return const SizedBox.shrink();
                 }
                 return InkWell(

@@ -41,7 +41,6 @@ class _QuoteWidgetState extends State<QuoteWidget> {
         });
   }
 
-// TODO pin & select random
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleNotifier>(builder: (context, clrs, child) {

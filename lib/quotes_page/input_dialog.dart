@@ -38,7 +38,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
 
   void onTagSubmit() {
     setState(() {
-      quote.tags.add(_tagCont.text);
+      quote.addTag(_tagCont.text);
       _tagCont.clear();
       _focusNode.requestFocus();
     });
@@ -127,7 +127,7 @@ class _InputDialogWidgetState extends State<InputDialogWidget> {
               InkWell(
                   onTap: () {
                     setState(() {
-                      quote.tags.remove(tag);
+                      quote.removeTag(tag);
                     });
                   },
                   child: Icon(Icons.close,
