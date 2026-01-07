@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:home_quote/style_notifier.dart';
 import 'package:provider/provider.dart';
@@ -21,40 +19,15 @@ class SearchWidget extends StatefulWidget {
 }
 
 class _SearchWidgetState extends State<SearchWidget> {
-  final _node = FocusNode();
-  bool isExpanded = false;
-
   @override
   void initState() {
-    _node.addListener(() {
-      if (_node.hasFocus) {
-        setState(() {
-          isExpanded = true;
-        });
-      } else if (widget.controller.text.isEmpty) {
-        setState(() {
-          isExpanded = false;
-        });
-      }
-    });
     super.initState();
   }
-  // TODO fix search ui
-  // TODO unfocus search when cleared
 
   @override
   Widget build(BuildContext context) {
     final c = context.watch<StyleNotifier>().appColor.withValues(alpha: 0.4);
-    return AnimatedContainer(
-      height: widget.canBeHidden ? 50 : null,
-      duration: const Duration(milliseconds: 200),
-      constraints: widget.canBeHidden
-          ? BoxConstraints(
-              maxHeight: 50,
-              maxWidth: isExpanded
-                  ? min(500, MediaQuery.of(context).size.width - 0)
-                  : 50)
-          : null,
+    return Container(
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -63,7 +36,6 @@ class _SearchWidgetState extends State<SearchWidget> {
         // color: context.watch<StyleNotifier>().appColor.withValues(alpha: 0.2)
       ),
       child: TextField(
-        focusNode: _node,
         cursorColor: context.watch<StyleNotifier>().appColor,
         controller: widget.controller,
         style: TextStyle(color: context.watch<StyleNotifier>().appColor),
@@ -73,16 +45,13 @@ class _SearchWidgetState extends State<SearchWidget> {
             Icons.search,
             color: c,
           ),
-          suffixIcon: (widget.controller.text.isEmpty || !isExpanded)
+          suffixIcon: (widget.controller.text.isEmpty)
               ? null
               : IconButton(
                   icon: Icon(Icons.clear, color: c),
                   onPressed: () {
                     widget.controller.clear();
                     widget.onClear();
-                    setState(() {
-                      isExpanded = false;
-                    });
                   },
                 ),
           // border: canBeHidden ? InputBorder.none : null,

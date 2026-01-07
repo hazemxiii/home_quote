@@ -117,7 +117,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 ),
                 // TODO files
                 Text(
-                  "2.0.1",
+                  "2.0.2",
                   style:
                       TextStyle(color: context.watch<StyleNotifier>().appColor),
                 )
